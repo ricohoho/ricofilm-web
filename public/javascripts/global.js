@@ -1,5 +1,6 @@
 // Userlist data array for filling in info box
 var filmListData = [];
+var filmPage=0;
 
 // DOM Ready =============================================================
 $(document).ready(function() {
@@ -11,22 +12,30 @@ $(document).ready(function() {
   //$('#btnAddUser').on('click', addUser);
   // Search User button click
   $('#btnSearchFilm').on('click', searchFilm );
+
+  $('#XNextFilms').on('click', searchFilmNext );
+  $('#XPrevFilms').on('click', searchFilm );
+
+
   // Delete User link click
   $('#filmList table tbody').on('click', 'td a.linkDetailfilm', detailFilm);
 
 });
 
 // Functions =============================================================
+function populateTable(filmName) {
+  populateTablePage(filmName,0);
+}
 
 // Fill table with data
-function populateTable(filmName) {
+function populateTablePage(filmName,page) {
 
   //alert('populateTable userName:'+filmName);
   // Empty content string
   var tableContent = '';
 
   // jQuery AJAX call for JSON
-  $.getJSON( '/films/filmlist?filmname='+filmName, function( data ) {
+  $.getJSON( '/films/list?filmname='+filmName+'&skip='+page, function( data ) {
 
     // Stick our user data array into a userlist variable in the global object
     filmListData = data;
@@ -34,9 +43,9 @@ function populateTable(filmName) {
     // For each item in our JSON, add a table row and cells to the content string
     $.each(data, function(){
       tableContent += '<tr>';
-      tableContent += '<td><a href="#" class="linkshowfilm" rel="' + this.original_title + '" title="Show Details">' + this.original_title + '</a></td>';
+      tableContent += '<td><a href="#" class="linkshowfilm" rel="' + this._id + '" title="Show Details">' + this.original_title + '</a></td>';
       tableContent += '<td>' + this.release_date + '</td>';
-      tableContent += '<td><a href="#" class="linkDetailfilm" rel="' + this.original_title + '">detail</a></td>';
+      tableContent += '<td><a href="#" class="linkDetailfilm" rel="' + this._id + '">detail</a></td>';
       tableContent += '</tr>';
     });
 
@@ -46,18 +55,24 @@ function populateTable(filmName) {
 };
 
 function detailFilm(event) {
-    // Prevent Link from Firing
-    event.preventDefault();
-    // Retrieve username from link rel attribute
-    var thisOriginal_title = $(this).attr('rel');
-    //alert('thisOriginal_title:'+thisOriginal_title);
-    // Get Index of object based on id value
-    var arrayPosition = filmListData.map(function(arrayItem) { return arrayItem.original_title; }).indexOf(thisOriginal_title);
+  // Prevent Link from Firing
+  event.preventDefault();
+  // Retrieve username from link rel attribute
+  var this_id = $(this).attr('rel');
+  //alert('thisOriginal_title:'+thisOriginal_title);
+  // Get Index of object based on id value
+  var arrayPosition = filmListData.map(function(arrayItem) {
+     return arrayItem._id;
+   }).indexOf(this_id);
 
-    // Get our User Object
+  // Get our User Object
+  detailFilmObjet(arrayPosition);
+
+}
+
+function detailFilmObjet(arrayPosition) {
+
     var thisFilmObject = filmListData[arrayPosition];
-
-
 
     //======================detail rapide===============
     $('#filmInfoOriginal_title').text(thisFilmObject.original_title);
@@ -74,11 +89,16 @@ function detailFilm(event) {
     $('#XfilmInfoTitle').text(thisFilmObject.title);
     //alert(' '+thisFilmObject.credits.crew[0].name)
     $('#XfilmInfoCrew_Name0').text(thisFilmObject.credits.crew[0].name);
+    $('#XfilmInfoCrew_Name0').attr("onclick","modal.style.display='none';populateTable('"+thisFilmObject.credits.crew[0].name+"');");
     $('#XfilmInfoOverview').text(thisFilmObject.overview);
     $('#XfilmInfoPopularity').text(thisFilmObject.popularity);
     $("#XfilmInfoPoster_path").attr("src","https://image.tmdb.org/t/p/original/"+thisFilmObject.poster_path);
-    $('#XfilmInfoRICO_path').text(thisFilmObject.RICO.path + ' ('+thisFilmObject.RICO.size/1000000+' Mo)');
+    $('#XfilmInfoRICO_path').text(thisFilmObject.RICO.path + ' ('+thisFilmObject.RICO.size/1000000+' Mo) '+thisFilmObject.RICO.file);
 
+    $('#XNextFilm').attr("onclick","detailFilmObjet("+(arrayPosition+1)+");");
+    $('#XPrevFilm').attr("onclick","detailFilmObjet("+(arrayPosition-1)+");");
+
+//GENRE
     _genre='';
     for (var i=0; i<thisFilmObject.genres.length; i++) {
       var genre = thisFilmObject.genres[i];
@@ -90,6 +110,7 @@ function detailFilm(event) {
     }
     $('#XfilmInfoGenre').text(_genre);
 
+    //Country
     _production_country='';
     for (var i=0; i<thisFilmObject.production_countries.length; i++) {
       var production_country = thisFilmObject.production_countries[i];
@@ -101,22 +122,36 @@ function detailFilm(event) {
     }
     $('#XfilmInfoProduction_country').text(_production_country);
 
-        $('#XfilmInfoCredits_Cast_name0').text(thisFilmObject.credits.cast[0].name);
-        $('#XfilmInfoCredits_Cast_character0').text(thisFilmObject.credits.cast[0].character);
-        $('#XfilmInfoCredits_Cast_profile_path0').attr("src","https://image.tmdb.org/t/p/original/"+thisFilmObject.credits.cast[0].profile_path);
-        $('#XfilmInfoCredits_Cast_profile_path0').attr("onclick","modal.style.display='none';populateTable('"+thisFilmObject.credits.cast[0].name+"');");
+/*
+    for (var i=0; i<thisFilmObject.credits.cast.length; i++) {
+      $('#XfilmInfoCredits_Cast_name'+i).text(thisFilmObject.credits.cast[i].name);
+      $('#XfilmInfoCredits_Cast_character'+i).text(thisFilmObject.credits.cast[i].character);
+      $('#XfilmInfoCredits_Cast_profile_path'+i).attr("src","https://image.tmdb.org/t/p/original/"+thisFilmObject.credits.cast[i].profile_path);
+      $('#XfilmInfoCredits_Cast_name'+i).attr("onclick","modal.style.display='none';populateTable('"+thisFilmObject.credits.cast[i].name+"');");
+    }
+*/
+    //CASTING
+    tableCastContent='<TR>';
+    nb_cast= Math.min(thisFilmObject.credits.cast.length,10);
+    for (var i=0; i<nb_cast; i++) {
+      profile_path = thisFilmObject.credits.cast[i].profile_path;
+      if(profile_path!=null) {
+        tableCastContent +='<td><img  width="90" src="https://image.tmdb.org/t/p/original/'+thisFilmObject.credits.cast[i].profile_path+'"></td> )';
+      }else {
+        tableCastContent +='<td></td> )';
+      }
+    }
+    tableCastContent += '</TR><TR>';
+    for (var i=0; i<nb_cast; i++) {
+      tableCastContent += '<td><a href="#" class="linkshowfilm" onclick="modal.style.display=\'none\';populateTable(\''+thisFilmObject.credits.cast[i].name+'\')" rel="' + thisFilmObject.credits.cast[i].name + '" title="Show Details">' +thisFilmObject.credits.cast[i].name + '</a>';
+      tableCastContent += '<BR><span>' +thisFilmObject.credits.cast[i].character + '</span></TD>';
+    };
+    tableCastContent += '</TR>';
 
-        $('#XfilmInfoCredits_Cast_name1').text(thisFilmObject.credits.cast[1].name);
-        $('#XfilmInfoCredits_Cast_character1').text(thisFilmObject.credits.cast[1].character);
-        $('#XfilmInfoCredits_Cast_profile_path1').attr("src","https://image.tmdb.org/t/p/original/"+thisFilmObject.credits.cast[1].profile_path);
-        $('#XfilmInfoCredits_Cast_profile_path1').attr("onclick","modal.style.display='none';populateTable('"+thisFilmObject.credits.cast[1].name+"');");
+    // Inject the whole content string into our existing HTML table
+    $('#filmCastList table tbody').html(tableCastContent);
 
-        $('#XfilmInfoCredits_Cast_name2').text(thisFilmObject.credits.cast[2].name);
-        $('#XfilmInfoCredits_Cast_character2').text(thisFilmObject.credits.cast[2].character);
-        $('#XfilmInfoCredits_Cast_profile_path2').attr("src","https://image.tmdb.org/t/p/original/"+thisFilmObject.credits.cast[2].profile_path);
-        $('#XfilmInfoCredits_Cast_profile_path2').attr("onclick","modal.style.display='none';populateTable('"+thisFilmObject.credits.cast[2].name+"');");
-
-        $(window).scrollTop(0);
+    $(window).scrollTop(0);
 
 }
 
@@ -127,10 +162,12 @@ function showFilmInfo(event) {
   event.preventDefault();
 
   // Retrieve username from link rel attribute
-  var thisOriginal_title = $(this).attr('rel');
+  var this_id = $(this).attr('rel');
   //alert('thisUserName:'+thisUserName);
   // Get Index of object based on id value
-  var arrayPosition = filmListData.map(function(arrayItem) { return arrayItem.original_title; }).indexOf(thisOriginal_title);
+  var arrayPosition = filmListData.map(function(arrayItem) {
+     return arrayItem._id; }
+   ).indexOf(this_id);
 
   // Get our User Object
   var thisFilmObject = filmListData[arrayPosition];
@@ -145,10 +182,27 @@ function showFilmInfo(event) {
 
 // Search User
 function searchFilm(event) {
+  filmPage=0;
   event.preventDefault();
   filmName=$('#searchFilm fieldset input#inputFilm').val();
   //alert('searchFilm:'+filmName);
   populateTable(filmName)
+}
+
+function searchFilmNext(event) {
+  filmPage=filmPage+20;
+  event.preventDefault();
+  filmName=$('#searchFilm fieldset input#inputFilm').val();
+  //alert('searchFilm:'+filmName);
+  populateTablePage(filmName,filmPage);
+}
+
+function searchFilmPrev(event) {
+  filmPage=filmPage-20;
+  event.preventDefault();
+  filmName=$('#searchFilm fieldset input#inputFilm').val();
+  //alert('searchFilm:'+filmName);
+  populateTablePage(filmName,filmPage);
 }
 
 // Add User
@@ -251,16 +305,10 @@ function deleteUser(event) {
 // Get the modal
 var modal = document.getElementById('myModal');
 
-// Get the button that opens the modal
-var btn = document.getElementById("myBtn");
 
 // Get the <span> element that closes the modal
 var span = document.getElementsByClassName("close")[0];
 
-// When the user clicks the button, open the modal
-btn.onclick = function() {
-    modal.style.display = "block";
-}
 
 // When the user clicks on <span> (x), close the modal
 span.onclick = function() {
