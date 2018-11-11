@@ -2,7 +2,6 @@ extends layout
 
 block content
   h1= title
-  p Bienvenue :-)
 
   // Wrapper
   #wrapper
@@ -14,6 +13,8 @@ block content
       fieldset
         input#inputFilm(type='text', placeholder='Film')
         button#btnSearchFilm Search Film
+        a#XNextFilms(href="#") +
+        a#XPrevFilms(href="#") -
     // /SEARCH USER
 
     // FILM LIST
@@ -50,10 +51,11 @@ block content
 
     //
     #filmDetail
-      button#myBtn Open Moda
       #myModal.modal-content
         #modal-header.modal-header
           span.close &times;
+          a#XNextFilm(href="#").close +
+          a#XPrevFilm(href="#").close -
           h2#XfilmInfoOriginal_title Titre
         #modal-body.modal-body
           p
@@ -61,7 +63,7 @@ block content
             |  <span id='XfilmInfoTitle'></span>
             br
             strong Metteur en scene:
-            |  <span id='XfilmInfoCrew_Name0'></span>
+            |  <a href="#" class="linkshowfilm"  id='XfilmInfoCrew_Name0'></a>
             br
             strong Synosis:
             |  <span id='XfilmInfoOverview'></span>
@@ -75,40 +77,25 @@ block content
                   td
                     |  <img id='XfilmInfoPoster_path'   width="180"></img>
                   td.filmdetail
-                    table
-                      tbody
-                        tr
-                          td(colspan = "3")
-                            strong Genre :
-                            |  <span id='XfilmInfoGenre'>Coucocu</span>
-                            br
-                            strong pays :
-                            | <span id='XfilmInfoProduction_country'></span> 
-                        tr
-                          td
-                            |  <img id='XfilmInfoCredits_Cast_profile_path0'   width="90"></img>
-                          td
-                            |  <img id='XfilmInfoCredits_Cast_profile_path1'   width="90"></img>
-                          td
-                            |  <img id='XfilmInfoCredits_Cast_profile_path2'   width="90"></img>
-                        tr
-                          td
-                            |  <B><span id='XfilmInfoCredits_Cast_name0'></span></B><br>
-                            |  <span id='XfilmInfoCredits_Cast_character0'></span>
-                          td
-                            |  <B><span id='XfilmInfoCredits_Cast_name1'></span></B><br>
-                            |  <span id='XfilmInfoCredits_Cast_character1'></span>
-                          td
-                            |  <B><span id='XfilmInfoCredits_Cast_name2'></span></B><br>
-                            |  <span id='XfilmInfoCredits_Cast_character2'></span>
-                        tr
-                          td
-                            br
-                            br
-                            br
+                      table
+                        tbody
+                          tr
+                            td(colspan = "3")
+                              strong Genre :
+                              |  <span id='XfilmInfoGenre'>Coucocu</span>
+                              br
+                              strong pays :
+                              | <span id='XfilmInfoProduction_country'></span>
+                          tr
+                            td
+                              #filmCastList
+                                table
+                                  tbody
+
+
+
         #modal-footer.modal-footer
           h3#XfilmInfoRICO_path Modal Footer
-          |  <span id='XfilmInfoSize'></span>
     // /DETAIL
 
   // /WRAPPER
