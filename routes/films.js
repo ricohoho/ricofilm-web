@@ -1,17 +1,19 @@
 var express = require('express');
 var router = express.Router();
-
+var RECHERCHE_ACTEUR='acteur:'
+var RECHERCHE_TITRE='titre:'
 /*
 URL :
   http://localhost:3000/films/detail/ava -> detail du film AVA
-  http://localhost:3000/films/filmlist-> tt les film
+  http://localhost:3000/films/list-> tt les film
   http://localhost:3000/films/list?filmname=cage --> tt les film avec 'cage': titre / acteur / meteur en scene
   http://localhost:3000/films/#  --> web
+  http://localhost:3000/films/list?filmname=pitt&skip=0&infocount=O --> le nb de fiml qui match !
 */
 
 /* GET home page. */
 router.get('/', function(req, res, next) {
-  res.render('index', { title: 'Express' });
+  res.render('index', { title: 'RicoFilm' });
 });
 
 /* GET userlist. */
@@ -21,6 +23,7 @@ router.get('/list', function(req, res) {
 
   var _filmname=req.query.filmname;
   var _skip=req.query.skip;
+  var _infocount=req.query.infocount;
 
   if(!_skip) {
     _skip=0;
@@ -37,12 +40,26 @@ router.get('/list', function(req, res) {
     //    var objrequete = {original_title: new RegExp('(?=.*' + _filmname+')')};
     //============ infos===============
     //https://stackoverflow.com/questions/8246019/case-insensitive-search-in-mongo
-
-    var objrequete = { $or: [
+    console.log('requete index: '+_filmname.indexOf(RECHERCHE_ACTEUR) +'-'+RECHERCHE_ACTEUR.length);
+    if (_filmname.indexOf(RECHERCHE_ACTEUR)==0) {
+      _filmname=_filmname.substring(_filmname.indexOf(RECHERCHE_ACTEUR)+RECHERCHE_ACTEUR.length);
+      console.log('requete [acteur]: '+_filmname );
+      var objrequete = {"credits.cast.name":{'$regex' : _filmname, '$options' : 'i'}};
+    } else if (_filmname.indexOf(RECHERCHE_TITRE)==0) {
+      _filmname=_filmname.substring(_filmname.indexOf(RECHERCHE_TITRE)+RECHERCHE_TITRE.length);
+      console.log('requete [titre]: '+_filmname );
+      var objrequete = { $or: [
                         {original_title:{'$regex' : _filmname, '$options' : 'i'}},
+                        {title:{'$regex' : _filmname, '$options' : 'i'}}
+                     ]};
+    } else {
+      var objrequete = { $or: [
+                        {original_title:{'$regex' : _filmname, '$options' : 'i'}},
+                        {title:{'$regex' : _filmname, '$options' : 'i'}},
                         {"credits.cast.name":{'$regex' : _filmname, '$options' : 'i'}},
                         {"credits.crew.name":{'$regex' : _filmname, '$options' : 'i'}}
                      ]};
+    }
 
   } else  {
     var srequete='{}';
@@ -59,13 +76,25 @@ router.get('/list', function(req, res) {
   var optionBD={
     "limit": 20,
     "skip": _skip,
-    "sort":['insertDate','desc']
+    //"sort":'RICO.fileDate'
+    //"sort":['RICO.fileDate','asc']
+    //"sort":['title','asc']
     //"sort": "original_title"
+    "sort":['title','desc']
   };
-
-  collection.find(objrequete,optionBD,function(e,docs){
-    res.json(docs);
-  });//.sort( { release_date: 1 } ).limit(5);
+  if(! _infocount) {
+    collection.find(objrequete,optionBD,function(e,docs){
+      res.json(docs);
+      console.log('retour XML');
+    });//.sort( { release_date: 1 } ).limit(5);
+  } else {
+    collection.count(objrequete,{},function(e,count){
+      console.log('Nb count docs'+count);
+      var obj = new Object();
+      obj.count = count
+      res.json(obj);
+    });
+  }
 
 
   router.get('/detail/:film', function(req, res) {
@@ -82,9 +111,13 @@ router.get('/list', function(req, res) {
       var srequete='{}';
       var objrequete = JSON.parse(srequete);
     }
+
     collection.find(objrequete,{},function(e,docs){
       res.json(docs);
     });
+
+
+
   });
 
 
