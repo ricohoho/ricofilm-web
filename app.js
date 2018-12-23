@@ -8,6 +8,7 @@ var logger = require('morgan');
 var mongo = require('mongodb');
 var monk = require('monk');
 var db = monk('localhost:27017/ricofilm');
+//var db = monk('mongodb://myUserAdmin:rineka5993@localhost:27017/ricofilm');
 
 
 
