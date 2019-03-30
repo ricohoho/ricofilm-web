@@ -77,10 +77,10 @@ router.get('/list', function(req, res) {
     "limit": 20,
     "skip": _skip,
     //"sort":'RICO.fileDate'
-    //"sort":['RICO.fileDate','asc']
+    "sort":"-RICO.fileDate"
     //"sort":['title','asc']
     //"sort": "original_title"
-    "sort":['title','desc']
+    //"sort":['release_date','desc']
   };
   if(! _infocount) {
     collection.find(objrequete,optionBD,function(e,docs){
