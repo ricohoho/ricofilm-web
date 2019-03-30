@@ -3,7 +3,7 @@ var router = express.Router();
 var RECHERCHE_ACTEUR='acteur:'
 var RECHERCHE_TITRE='titre:'
 /*
-URL :
+URL : 
   http://localhost:3000/films/detail/ava -> detail du film AVA
   http://localhost:3000/films/list-> tt les film
   http://localhost:3000/films/list?filmname=cage --> tt les film avec 'cage': titre / acteur / meteur en scene
