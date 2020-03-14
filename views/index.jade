@@ -31,7 +31,7 @@ block content
       h2 RicoFilm
       p
         strong Titre:
-        |  <span id='filmInfoOriginal_title'></span>
+        |  <span id='filmInfoOriginal_title'></span><img id='filmInfo_Rico_StatusFichier'   width="10"></img>
         br
         strong Date de sortie:
         |  <span id='filmInfoRelease_date'></span>
@@ -48,7 +48,6 @@ block content
         |  <span id='filmInfoPopularity'></span>
 
     // /FILM INFO
-
     //
     #filmDetail
       #myModal.modal-content
@@ -98,5 +97,33 @@ block content
           #container-fluid
             h5#XfilmInfoRICO_path Modal Footer
     // /DETAIL
+
+
+    // /Request INFO + REQUEST
+    //
+    #requestDetail
+      #myModal2.modal-content
+        #modal-header.modal-header
+          h5#XfilmInfoOriginal_title Titre
+          #container-fluid
+            span.close2 &times;
+        #modal-body-request.modal-body-request
+          p
+            strong Titre (fr) :
+            |  <span id='XRequestfilmInfoTitle'></span>
+          P
+            strong Fichier :
+            |  <span id='XRequestRICO_file'></span>
+            |  ( Taille  <span id='XRequestRICO_size'></span>)
+            br
+            #addRequest
+              fieldset
+                input#inputUserName(type='text', placeholder='Username')
+                input#inputId(type='hidden')
+                input#inputTitle(type='hidden')
+                input#inputRICO_file(type='hidden')
+                input#inputRICO_size(type='hidden')
+                input#inputRICO_fileDate(type='hidden')
+                button#btnAddRequest Add Demande
 
   // /WRAPPER

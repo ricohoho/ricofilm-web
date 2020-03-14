@@ -16,6 +16,7 @@ var db = monk('localhost:27017/ricofilm');
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 var filmsRouter = require('./routes/films');
+var resquestRouter = require('./routes/request');
 
 
 var app = express();
@@ -39,6 +40,7 @@ app.use(function(req,res,next){
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
 app.use('/films', filmsRouter);
+app.use('/request', resquestRouter);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

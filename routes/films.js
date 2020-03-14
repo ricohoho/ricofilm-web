@@ -3,7 +3,7 @@ var router = express.Router();
 var RECHERCHE_ACTEUR='acteur:'
 var RECHERCHE_TITRE='titre:'
 /*
-URL :  
+URL :
   http://localhost:3000/films/detail/ava -> detail du film AVA
   http://localhost:3000/films/list-> tt les film
   http://localhost:3000/films/list?filmname=cage --> tt les film avec 'cage': titre / acteur / meteur en scene
@@ -20,7 +20,6 @@ router.get('/', function(req, res, next) {
 router.get('/list', function(req, res) {
   var db = req.db;
   var collection = db.get('films');
-
   var _filmname=req.query.filmname;
   var _skip=req.query.skip;
   var _infocount=req.query.infocount;

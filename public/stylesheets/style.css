@@ -62,6 +62,32 @@ fieldset {
 }
 
 
+#wrapper_request {
+	padding-left:20px;
+	position:relative;
+}
+
+#requestList table {
+  border-collapse:separate;
+  border-spacing:1px;
+  background:#CCC;
+}
+  #requestList table th {
+    background:#EEE;
+    font-weight:400;
+    padding:10px 20px;
+    text-align:center;
+  }
+  #requestList table tbody {
+    padding:0; margin:0;
+    border-collapse:collapse;
+    border-spacing:0px;
+  }
+    #requestList table td {
+      background:#FFF;
+      padding:5px 10px;
+      text-align:center;
+    }
 
 
 /* The Modal (background) */
@@ -129,6 +155,7 @@ fieldset {
 }
 
 .modal-body {padding: 2px 16px;}
+.modal-body-request {padding: 2px 16px;font-size: 12px}
 
 .modal-footer {
     padding: 2px 16px;

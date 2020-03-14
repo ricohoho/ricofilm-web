@@ -10,8 +10,8 @@ $(document).ready(function() {
   // Username link click
   $('#filmList table tbody').on('click', 'td a.linkshowfilm', showFilmInfo);
   // Add User button click
-  //$('#btnAddUser').on('click', addUser);
-  // Search User button click
+  $('#btnAddRequest').on('click', addResquest);
+  // Search Film  button click
   $('#btnSearchFilm').on('click', searchFilm );
 
   $('#btnNext').on('click', searchFilmNext );
@@ -20,7 +20,47 @@ $(document).ready(function() {
   // Delete User link click
   $('#filmList table tbody').on('click', 'td a.linkDetailfilm', detailFilm);
 
+  $('#filmList table tbody').on('click', 'td a.linkshowRequestForm', showRequestForm);
+
+
+
 });
+
+//=== POPUP de de saisie d'un detail d'une demande de film
+function showRequestForm(){
+//== Position de ma Modal
+  modal2.style.display = "block";
+  modal2.style.position= "fixed";
+  modal2.style.bottom= 10;
+  modal2.style.right= 10;
+  modal2.style.width= "400px";
+
+  //== Reccuperation de l'id du Film
+  // Prevent Link from Firing
+  event.preventDefault();
+  // Retrieve username from link rel attribute
+  var this_id = $(this).attr('rel');
+  //alert('thisOriginal_title:'+thisOriginal_title);
+  // Get Index of object based on id value
+  var arrayPosition = filmListData.map(function(arrayItem) {
+     return arrayItem._id;
+   }).indexOf(this_id);
+
+  var thisFilmObject = filmListData[arrayPosition];
+  $('#XRequestfilmInfoTitle').text(thisFilmObject.original_title+' ('+thisFilmObject.title+')');
+  $('#XRequestRICO_file').text(thisFilmObject.RICO.file);
+  $('#XRequestRICO_size').text(thisFilmObject.RICO.size);
+
+  //alert(thisFilmObject.id);
+  document.getElementById('inputId').value=thisFilmObject.id;
+  document.getElementById('inputTitle').value=thisFilmObject.title;
+  document.getElementById('inputRICO_file').value=thisFilmObject.RICO.file;
+  document.getElementById('inputRICO_size').value=thisFilmObject.RICO.size;
+  document.getElementById('inputRICO_fileDate').value=thisFilmObject.RICO.fileDate;
+  //alert('inputId'+document.getElementById('inputId').value);
+
+
+}
 
 // Functions =============================================================
 function populateTable(filmName) {
@@ -69,7 +109,13 @@ function populateTablePage(filmName,page) {
       } else {
         _titre= this.original_title ;
       }
-      tableContent += '<td><a href="#" class="linkshowfilm" rel="' + this._id + '" title="Show Details">' + _titre+' </a></td>';
+
+      if(this.RICO.StatusFichier=='OK') {
+        StatusFichierImg='<A href="#" class=linkshowRequestForm rel="' + this._id + '" title="Reserver le film"><img width="10" src="../images/ok.png"></img></A>'
+      } else  {
+        StatusFichierImg='<A href="#" class=linkshowRequestForm><img width="10" src="../images/ko.png"></img></a>'
+      }
+      tableContent += '<td>'+StatusFichierImg+'<a href="#" class="linkshowfilm" rel="' + this._id + '" title="Show Details">' + _titre+' </a></td>';
       tableContent += '<td>' + this.release_date + '</td>';
       tableContent += '<td><a href="#" class="linkDetailfilm" rel="' + this._id + '">detail</a></td>';
       tableContent += '</tr>';
@@ -94,8 +140,9 @@ function detailFilm(event) {
   detailFilmObjet(arrayPosition);
 }
 
+// == Popup Detail FILM
 function detailFilmObjet(arrayPosition) {
-
+    //alert('detailFilmObjet');
     var thisFilmObject = filmListData[arrayPosition];
     //======================detail rapide===============
     $('#filmInfoOriginal_title').text(thisFilmObject.original_title);
@@ -119,7 +166,7 @@ function detailFilmObjet(arrayPosition) {
     $('#XNextFilm').attr("onclick","detailFilmObjet("+(arrayPosition+1)+");");
     $('#XPrevFilm').attr("onclick","detailFilmObjet("+(arrayPosition-1)+");");
 
-//GENRE
+    //GENRE
     _genre='';
     for (var i=0; i<thisFilmObject.genres.length; i++) {
       var genre = thisFilmObject.genres[i];
@@ -168,12 +215,13 @@ function detailFilmObjet(arrayPosition) {
       tableCastContent += '<BR><span>' +thisFilmObject.credits.cast[i].character + '</span></TD>';
     };
     tableCastContent += '</TR>';
+
     // Inject the whole content string into our existing HTML table
     $('#filmCastList table tbody').html(tableCastContent);
     $(window).scrollTop(0);
 }
 
-// Show User Info
+// Show Film  Info [Partie gauchede la fenetre]
 function showFilmInfo(event) {
   //alert('showFilmInfo');
   // Prevent Link from Firing
@@ -191,6 +239,11 @@ function showFilmInfo(event) {
   $('#filmInfoOriginal_title').text(thisFilmObject.original_title);
   $('#filmInfoRelease_date').text(thisFilmObject.release_date);
   $('#filmInfo_Rico_fileDate').text(thisFilmObject.RICO.fileDate.slice(0,10));
+  if(thisFilmObject.RICO.StatusFichier=='OK') {
+    $("#filmInfo_Rico_StatusFichier").attr("src","../images/ok.png");
+  } else  {
+    $("#filmInfo_Rico_StatusFichier").attr("src","../images/ko.png");
+  }
   $('#filmInfoOverview').text(thisFilmObject.overview);
   $('#filmInfoPopularity').text(thisFilmObject.popularity);
   $("#filmInfoPoster_path").attr("src","https://image.tmdb.org/t/p/original/"+thisFilmObject.poster_path);
@@ -222,22 +275,25 @@ function searchFilmPrev(event) {
 }
 
 // Add User
-function addUser(event) {
+function addResquest(event) {
+  alert('hoho');
   event.preventDefault();
 
   // Super basic validation - increase errorCount variable if any fields are blank
   var errorCount = 0;
-  $('#addUser input').each(function(index, val) {
+  $('#addRequest input').each(function(index, val) {
     if($(this).val() === '') { errorCount++; }
   });
 
+alert($('#addRequest fieldset input#inputId').val())
+alert($('#addRequest fieldset input#inputUserName').val())
   // Check and make sure errorCount's still at zero
   if(errorCount === 0) {
 
     // If it is, compile all user info into one object
     var newUser = {
       'username': $('#addUser fieldset input#inputUserName').val(),
-      'email': $('#addUser fieldset input#inputUserEmail').val(),
+      'id': $('#addUser fieldset input#inputId').val(),
       'fullname': $('#addUser fieldset input#inputUserFullname').val(),
       'age': $('#addUser fieldset input#inputUserAge').val(),
       'location': $('#addUser fieldset input#inputUserLocation').val(),
@@ -318,19 +374,27 @@ function deleteUser(event) {
 
 
 //===============Gestion Modale ======================
-// Get the modal
+// Get the modal Detail =====Film=====
 var modal = document.getElementById('myModal');
-
-
 // Get the <span> element that closes the modal
 var span = document.getElementsByClassName("close")[0];
-
-
 // When the user clicks on <span> (x), close the modal
 span.onclick = function() {
 	//alert('span.onclick');
   modal.style.display = "none";
 }
+
+
+// Get the modal Detail request ===Request===
+var modal2 = document.getElementById('myModal2');
+// Get the <span> element that closes the modal
+var span2 = document.getElementsByClassName("close2")[0];
+// When the user clicks on <span> (x), close the modal
+span2.onclick = function() {
+	//alert('span.onclick');
+  modal2.style.display = "none";
+}
+
 
 // When the user clicks anywhere outside of the modal, close it
 window.onclick = function(event) {
@@ -343,10 +407,12 @@ window.onclick = function(event) {
       //alert('=>  None');
       //modal.style.display = "none";
   }
+
 }
 
   //Init de la viiblité et de la possition du détail
   modal.style.display = "none";
+  modal2.style.display = "none";
   var domElement = document.getElementById('myModal');// don't go to to DOM every time you need it. Instead store in a variable and manipulate.
   domElement.style.position = "absolute";
   domElement.style.top = 0; //or whatever
