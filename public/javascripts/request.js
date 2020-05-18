@@ -36,10 +36,12 @@ function populateTablePage(filmName,page) {
       tableContent += '<td>' + this.username + '</td>';
       tableContent += '<td>' + this.id + '</td>';
       tableContent += '<td>' + this.title + '</td>';
-      tableContent += '<td>' + this.RICO_file + '</td>';
-      tableContent += '<td>' + this.RICO_size + '</td>';
-      tableContent += '<td>' + this.RICO_filedate + '</td>';
-      tableContent += '<td>' + this.RICO_StatusFichier + '</td>';
+      tableContent += '<td>' + this.serveur_name + '</td>';
+      tableContent += '<td>' + this.path + '</td>';
+      tableContent += '<td>' + this.file + '</td>';
+      tableContent += '<td>' + this.size + '</td>';
+      tableContent += '<td>' + this.filedate + '</td>';
+      tableContent += '<td>' + this.status + '</td>';
       tableContent += '</tr>';
     });
 

@@ -95,7 +95,17 @@ block content
 
         #modal-footer.modal-footer
           #container-fluid
-            h5#XfilmInfoRICO_path Modal Footer
+                // FILM RICO FILE
+                #filmRico_file
+                  table
+                    thead
+                      th serveur
+                      th Dossier
+                      th FIchier
+                      th Taille
+                    tbody
+                // /FILM RICO FILE
+
     // /DETAIL
 
 
@@ -104,7 +114,7 @@ block content
     #requestDetail
       #myModal2.modal-content
         #modal-header.modal-header
-          h5#XfilmInfoOriginal_title Titre
+          h5#XfilmInfoOriginalRequest_title Titre
           #container-fluid
             span.close2 &times;
         #modal-body-request.modal-body-request
@@ -116,14 +126,29 @@ block content
             |  <span id='XRequestRICO_file'></span>
             |  ( Taille  <span id='XRequestRICO_size'></span>)
             br
+
+
+            // FILM RICO FILE
+            #filmRico_file
+              table
+                thead
+                  th x
+                  th Dossier
+                  th FIchier
+                  th Taille
+                tbody
+            // /FILM RICO FILE
+
             #addRequest
               fieldset
                 input#inputUserName(type='text', placeholder='Username')
                 input#inputId(type='hidden')
-                input#inputTitle(type='hidden')
-                input#inputRICO_file(type='hidden')
-                input#inputRICO_size(type='hidden')
-                input#inputRICO_fileDate(type='hidden')
+                input#inputTitle(type='hidden')                
+                input#inputFileServeur(type='hidden')
+                input#inputPath(type='hidden')
+                input#inputFile(type='hidden')
+                input#inputSize(type='hidden')
+                input#inputFileDate(type='hidden')
                 button#btnAddRequest Add Demande
 
   // /WRAPPER

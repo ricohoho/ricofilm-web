@@ -2,17 +2,20 @@ var express = require('express');
 var router = express.Router();
 var RECHERCHE_ACTEUR='acteur:'
 var RECHERCHE_TITRE='titre:'
+var RECHERCHE_ID='id:'
 /*
 URL :
-  http://localhost:3000/films/detail/ava -> detail du film AVA
+     -> detail du film AVA
   http://localhost:3000/films/list-> tt les film
   http://localhost:3000/films/list?filmname=cage --> tt les film avec 'cage': titre / acteur / meteur en scene
+  http://localhost:3000/films/list?filmname=titre:District  ---> filtrage sue sur le titre
   http://localhost:3000/films/#  --> web
   http://localhost:3000/films/list?filmname=pitt&skip=0&infocount=O --> le nb de fiml qui match !
 */
 
 /* GET home page. */
 router.get('/', function(req, res, next) {
+  //RICO : index  est le nom du tempate .jade !
   res.render('index', { title: 'RicoFilm' });
 });
 
@@ -44,6 +47,11 @@ router.get('/list', function(req, res) {
       _filmname=_filmname.substring(_filmname.indexOf(RECHERCHE_ACTEUR)+RECHERCHE_ACTEUR.length);
       console.log('requete [acteur]: '+_filmname );
       var objrequete = {"credits.cast.name":{'$regex' : _filmname, '$options' : 'i'}};
+    } else if (_filmname.indexOf(RECHERCHE_ID)==0) {
+      _filmname=_filmname.substring(_filmname.indexOf(RECHERCHE_ID)+RECHERCHE_ID.length);
+      console.log('requete [id]: <'+_filmname+'>' );
+      int_id = parseInt(_filmname, 10);;
+      var objrequete = {"id":int_id};
     } else if (_filmname.indexOf(RECHERCHE_TITRE)==0) {
       _filmname=_filmname.substring(_filmname.indexOf(RECHERCHE_TITRE)+RECHERCHE_TITRE.length);
       console.log('requete [titre]: '+_filmname );
@@ -120,6 +128,21 @@ router.get('/list', function(req, res) {
   });
 
 
+  /* POST to adduser. */
+router.post('/add', function(req, res) {
+  console.log('addFilm: debut' );
+  var db = req.db;
+  var collection = db.get('films');
+  collection.insert(req.body, function(err, result){
+    res.send(
+      (err === null) ? { msg: '' } : { msg: err }
+    );
+  });
 });
+
+
+});
+
+
 
 module.exports = router;

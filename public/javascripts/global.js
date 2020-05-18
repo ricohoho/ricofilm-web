@@ -1,6 +1,7 @@
-// Userlist data array for filling in info box
+// Filmlist data array for filling in info box
 var filmListData = [];
 var filmPage=0;
+var SERVEUR_NAME_PUBLIC='POR80090940';
 
 // DOM Ready =============================================================
 $(document).ready(function() {
@@ -27,39 +28,64 @@ $(document).ready(function() {
 });
 
 //=== POPUP de de saisie d'un detail d'une demande de film
-function showRequestForm(){
+function showRequestForm(event){
 //== Position de ma Modal
   modal2.style.display = "block";
   modal2.style.position= "fixed";
   modal2.style.bottom= 10;
   modal2.style.right= 10;
-  modal2.style.width= "400px";
+  modal2.style.width= "500px";
 
   //== Reccuperation de l'id du Film
   // Prevent Link from Firing
   event.preventDefault();
   // Retrieve username from link rel attribute
   var this_id = $(this).attr('rel');
-  //alert('thisOriginal_title:'+thisOriginal_title);
+
+  //alert('this_id:'+this_id);
   // Get Index of object based on id value
   var arrayPosition = filmListData.map(function(arrayItem) {
      return arrayItem._id;
    }).indexOf(this_id);
 
+  console.log('arrayPosition='+arrayPosition);
   var thisFilmObject = filmListData[arrayPosition];
-  $('#XRequestfilmInfoTitle').text(thisFilmObject.original_title+' ('+thisFilmObject.title+')');
-  $('#XRequestRICO_file').text(thisFilmObject.RICO.file);
-  $('#XRequestRICO_size').text(thisFilmObject.RICO.size);
+  $('#XfilmInfoOriginalRequest_title').text(thisFilmObject.original_title);
+  $('#XRequestfilmInfoTitle').text(thisFilmObject.title);
 
+ tableContent="";
+  for (var i=0; i<thisFilmObject.RICO_FICHIER.length; i++) {
+    if (i==0) checked="checked"; else checked="";
+    tableContent +='<tr><td><INPUT type= "radio"   onclick="requestSelectFile('+i+',\''+this_id+'\')";   name="select" value="'+i+'"   '+checked+'> </td><td>'+thisFilmObject.RICO_FICHIER[i].path + '</td><td>'+thisFilmObject.RICO_FICHIER[i].file+'</TD><td>('+thisFilmObject.RICO_FICHIER[i].size/1000000+' Mo)</td></TR>' ;
+  }
+  $('#filmRico_file table tbody').html(tableContent);
+/*
+  $('#XRequestRICO_file').text(thisFilmObject.RICO_FICHIER[0].file);
+  $('#XRequestRICO_size').text(thisFilmObject.RICO_FICHIER[0].size);
+*/
   //alert(thisFilmObject.id);
   document.getElementById('inputId').value=thisFilmObject.id;
   document.getElementById('inputTitle').value=thisFilmObject.title;
-  document.getElementById('inputRICO_file').value=thisFilmObject.RICO.file;
-  document.getElementById('inputRICO_size').value=thisFilmObject.RICO.size;
-  document.getElementById('inputRICO_fileDate').value=thisFilmObject.RICO.fileDate;
+  document.getElementById('inputPath').value=thisFilmObject.RICO_FICHIER[0].path
+  document.getElementById('inputFile').value=thisFilmObject.RICO_FICHIER[0].file
+  document.getElementById('inputSize').value=thisFilmObject.RICO_FICHIER[0].size;
+  document.getElementById('inputFileDate').value=thisFilmObject.RICO_FICHIER[0].fileDate;
+  document.getElementById('inputFileServeur').value=thisFilmObject.RICO_FICHIER[0].serveur_name;
   //alert('inputId'+document.getElementById('inputId').value);
 
+}
 
+//affectation des ficiers selectionnés au formaire d'envoi
+function requestSelectFile(i,this_id) {    
+  var arrayPosition = filmListData.map(function(arrayItem) {
+     return arrayItem._id;
+   }).indexOf(this_id);
+  var thisFilmObject = filmListData[arrayPosition];
+  document.getElementById('inputPath').value=thisFilmObject.RICO_FICHIER[i].path;
+  document.getElementById('inputFile').value=thisFilmObject.RICO_FICHIER[i].file;
+  document.getElementById('inputSize').value=thisFilmObject.RICO_FICHIER[i].size;
+  document.getElementById('inputFileDate').value=thisFilmObject.RICO_FICHIER[i].fileDate;
+  document.getElementById('inputFileServeur').value=thisFilmObject.RICO_FICHIER[i].serveur_name; 
 }
 
 // Functions =============================================================
@@ -88,7 +114,7 @@ function populateCount(filmName) {
 
 // Fill table with data
 function populateTablePage(filmName,page) {
-  //alert('populateTable userName:'+filmName);
+  console.log('populateTable filmName:'+filmName);
   // Empty content string
   var tableContent = '';
 
@@ -110,11 +136,21 @@ function populateTablePage(filmName,page) {
         _titre= this.original_title ;
       }
 
-      if(this.RICO.StatusFichier=='OK') {
-        StatusFichierImg='<A href="#" class=linkshowRequestForm rel="' + this._id + '" title="Reserver le film"><img width="10" src="../images/ok.png"></img></A>'
-      } else  {
-        StatusFichierImg='<A href="#" class=linkshowRequestForm><img width="10" src="../images/ko.png"></img></a>'
+      // REcherche si un des fichier est presnet sut le serveur (SERVEUR_NAME_PUBLIC)
+      fichierPresentSurServeur=false;
+      for (var i=0; i<this.RICO_FICHIER.length; i++) {
+        fichierPresentSurServeur=fichierPresentSurServeur || (this.RICO_FICHIER[i].serveur_name==SERVEUR_NAME_PUBLIC);        
       }
+      console.log('fichierPresentSurServeur:'+fichierPresentSurServeur);
+      if(fichierPresentSurServeur) {
+        //StatusFichierImg='<A href="#" class=linkshowRequestForm rel="' + this._id + '" title="Reserver le film"><img width="10" src="../images/ok.png"></img></A>'
+        StatusFichierImg='<img width="10" src="../images/ok.png"></img></A>'
+      } else  {
+        StatusFichierImg='<A href="#" class=linkshowRequestForm rel="' + this._id + '"> <img width="10" src="../images/ko.png"></img></a>'
+      }
+
+      //StatusFichierImg='<A href="#" class=linkshowRequestForm rel="' + this._id + '" title="Reserver le film"><img width="10" src="../images/ok.png"></img></A>'
+
       tableContent += '<td>'+StatusFichierImg+'<a href="#" class="linkshowfilm" rel="' + this._id + '" title="Show Details">' + _titre+' </a></td>';
       tableContent += '<td>' + this.release_date + '</td>';
       tableContent += '<td><a href="#" class="linkDetailfilm" rel="' + this._id + '">detail</a></td>';
@@ -161,7 +197,16 @@ function detailFilmObjet(arrayPosition) {
     $('#XfilmInfoOverview').text(thisFilmObject.overview);
     $('#XfilmInfoPopularity').text(thisFilmObject.popularity);
     $("#XfilmInfoPoster_path").attr("src","https://image.tmdb.org/t/p/original/"+thisFilmObject.poster_path);
-    $('#XfilmInfoRICO_path').text(thisFilmObject.RICO.path + ' ('+thisFilmObject.RICO.size/1000000+' Mo) '+thisFilmObject.RICO.file);
+
+
+    //Ensemble des fichiers rataché au films !
+      tableContent="";
+      for (var i=0; i<thisFilmObject.RICO_FICHIER.length; i++) {
+        tableContent +='<tr><td>'+thisFilmObject.RICO_FICHIER[i].serveur_name+'</td><td>'+thisFilmObject.RICO_FICHIER[i].path + '</td><td>'+thisFilmObject.RICO_FICHIER[i].file+'</TD><td>('+thisFilmObject.RICO_FICHIER[i].size/1000000+' Mo)</td></TR>' ;
+      }
+      $('#filmRico_file table tbody').html(tableContent);
+   
+    
 
     $('#XNextFilm').attr("onclick","detailFilmObjet("+(arrayPosition+1)+");");
     $('#XPrevFilm').attr("onclick","detailFilmObjet("+(arrayPosition-1)+");");
@@ -238,12 +283,17 @@ function showFilmInfo(event) {
   //Populate Info Box
   $('#filmInfoOriginal_title').text(thisFilmObject.original_title);
   $('#filmInfoRelease_date').text(thisFilmObject.release_date);
-  $('#filmInfo_Rico_fileDate').text(thisFilmObject.RICO.fileDate.slice(0,10));
+  $('#filmInfo_Rico_fileDate').text(thisFilmObject.RICO_FICHIER[0].fileDate.slice(0,10));
+
+  /* Solution a trouver pour indiquer que le fichier n'est oas sur le serveur
   if(thisFilmObject.RICO.StatusFichier=='OK') {
     $("#filmInfo_Rico_StatusFichier").attr("src","../images/ok.png");
   } else  {
     $("#filmInfo_Rico_StatusFichier").attr("src","../images/ko.png");
   }
+  */
+  $("#filmInfo_Rico_StatusFichier").attr("src","../images/ok.png");
+
   $('#filmInfoOverview').text(thisFilmObject.overview);
   $('#filmInfoPopularity').text(thisFilmObject.popularity);
   $("#filmInfoPoster_path").attr("src","https://image.tmdb.org/t/p/original/"+thisFilmObject.poster_path);
@@ -274,9 +324,9 @@ function searchFilmPrev(event) {
   populateTablePage(filmName,filmPage);
 }
 
-// Add User
+// Add Request 
 function addResquest(event) {
-  alert('hoho');
+  //alert('hoho');
   event.preventDefault();
 
   // Super basic validation - increase errorCount variable if any fields are blank
@@ -284,27 +334,36 @@ function addResquest(event) {
   $('#addRequest input').each(function(index, val) {
     if($(this).val() === '') { errorCount++; }
   });
+  //RICO : On verra les erreurs apres !
+  errorCount=0;
+  //alert($('#addRequest fieldset input#inputId').val())
+  //alert($('#addRequest fieldset input#inputUserName').val())
+  
+  //var modal = document.getElementById('myModal');
+  
 
-alert($('#addRequest fieldset input#inputId').val())
-alert($('#addRequest fieldset input#inputUserName').val())
+
   // Check and make sure errorCount's still at zero
   if(errorCount === 0) {
 
     // If it is, compile all user info into one object
-    var newUser = {
-      'username': $('#addUser fieldset input#inputUserName').val(),
-      'id': $('#addUser fieldset input#inputId').val(),
-      'fullname': $('#addUser fieldset input#inputUserFullname').val(),
-      'age': $('#addUser fieldset input#inputUserAge').val(),
-      'location': $('#addUser fieldset input#inputUserLocation').val(),
-      'gender': $('#addUser fieldset input#inputUserGender').val()
+    var newRequest = {
+      'username': $('#addRequest fieldset input#inputUserName').val(),
+      'id': $('#addRequest fieldset input#inputId').val(),
+      'title': $('#addRequest fieldset input#inputTitle').val(),
+      'serveur_name': $('#addRequest fieldset input#inputFileServeur').val(),
+      'path': $('#addRequest fieldset input#inputPath').val(),
+      'file': $('#addRequest fieldset input#inputFile').val(),
+      'size': $('#addRequest fieldset input#inputSize').val(),
+      'status':'AFAIRE'
     }
 
+    alert("Envoi de la demande au serveur !");
     // Use AJAX to post the object to our adduser service
     $.ajax({
       type: 'POST',
-      data: newUser,
-      url: '/users/adduser',
+      data: newRequest,
+      url: '/request/add',
       dataType: 'JSON'
     }).done(function( response ) {
 
@@ -315,7 +374,8 @@ alert($('#addRequest fieldset input#inputUserName').val())
         $('#addUser fieldset input').val('');
 
         // Update the table
-        populateTable();
+        populateTable('');
+        modal2.style.display = "none";
 
       }
       else {
@@ -325,9 +385,8 @@ alert($('#addRequest fieldset input#inputUserName').val())
 
       }
     });
-  }
-  else {
-    // If errorCount is more than 0, error out
+  } else {
+  // If errorCount is more than 0, error out
     alert('Please fill in all fields');
     return false;
   }
