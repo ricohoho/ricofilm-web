@@ -54,24 +54,30 @@ function showRequestForm(event){
   $('#XRequestfilmInfoTitle').text(thisFilmObject.title);
 
  tableContent="";
-  for (var i=0; i<thisFilmObject.RICO_FICHIER.length; i++) {
-    if (i==0) checked="checked"; else checked="";
-    tableContent +='<tr><td><INPUT type= "radio"   onclick="requestSelectFile('+i+',\''+this_id+'\')";   name="select" value="'+i+'"   '+checked+'> </td><td>'+thisFilmObject.RICO_FICHIER[i].path + '</td><td>'+thisFilmObject.RICO_FICHIER[i].file+'</TD><td>('+thisFilmObject.RICO_FICHIER[i].size/1000000+' Mo)</td></TR>' ;
+
+  if(thisFilmObject.hasOwnProperty('RICO_FICHIER'))  {
+    for (var i=0; i<thisFilmObject.RICO_FICHIER.length; i++) {
+      if (i==0) checked="checked"; else checked="";
+      tableContent +='<tr><td><INPUT type= "radio"   onclick="requestSelectFile('+i+',\''+this_id+'\')";   name="select" value="'+i+'"   '+checked+'> </td><td>'+thisFilmObject.RICO_FICHIER[i].path + '</td><td>'+thisFilmObject.RICO_FICHIER[i].file+'</TD><td>('+thisFilmObject.RICO_FICHIER[i].size/1000000+' Mo)</td></TR>' ;
+    }
+
+    //alert(thisFilmObject.id);
+    document.getElementById('inputId').value=thisFilmObject.id;
+    document.getElementById('inputTitle').value=thisFilmObject.title;
+    document.getElementById('inputPath').value=thisFilmObject.RICO_FICHIER[0].path
+    document.getElementById('inputFile').value=thisFilmObject.RICO_FICHIER[0].file
+    document.getElementById('inputSize').value=thisFilmObject.RICO_FICHIER[0].size;
+    document.getElementById('inputFileDate').value=thisFilmObject.RICO_FICHIER[0].fileDate;
+    document.getElementById('inputFileServeur').value=thisFilmObject.RICO_FICHIER[0].serveur_name;
+    //alert('inputId'+document.getElementById('inputId').value);
+
   }
   $('#filmRico_file table tbody').html(tableContent);
 /*
   $('#XRequestRICO_file').text(thisFilmObject.RICO_FICHIER[0].file);
   $('#XRequestRICO_size').text(thisFilmObject.RICO_FICHIER[0].size);
 */
-  //alert(thisFilmObject.id);
-  document.getElementById('inputId').value=thisFilmObject.id;
-  document.getElementById('inputTitle').value=thisFilmObject.title;
-  document.getElementById('inputPath').value=thisFilmObject.RICO_FICHIER[0].path
-  document.getElementById('inputFile').value=thisFilmObject.RICO_FICHIER[0].file
-  document.getElementById('inputSize').value=thisFilmObject.RICO_FICHIER[0].size;
-  document.getElementById('inputFileDate').value=thisFilmObject.RICO_FICHIER[0].fileDate;
-  document.getElementById('inputFileServeur').value=thisFilmObject.RICO_FICHIER[0].serveur_name;
-  //alert('inputId'+document.getElementById('inputId').value);
+  
 
 }
 
@@ -138,8 +144,11 @@ function populateTablePage(filmName,page) {
 
       // REcherche si un des fichier est presnet sut le serveur (SERVEUR_NAME_PUBLIC)
       fichierPresentSurServeur=false;
-      for (var i=0; i<this.RICO_FICHIER.length; i++) {
-        fichierPresentSurServeur=fichierPresentSurServeur || (this.RICO_FICHIER[i].serveur_name==SERVEUR_NAME_PUBLIC);        
+
+      if(this.hasOwnProperty('RICO_FICHIER'))  {
+        for (var i=0; i<this.RICO_FICHIER.length; i++) {
+          fichierPresentSurServeur=fichierPresentSurServeur || (this.RICO_FICHIER[i].serveur_name==SERVEUR_NAME_PUBLIC);        
+        }
       }
       console.log('fichierPresentSurServeur:'+fichierPresentSurServeur);
       if(fichierPresentSurServeur) {
