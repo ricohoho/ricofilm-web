@@ -1,7 +1,9 @@
-// Filmlist data array for filling in info box
+ // Filmlist data array for filling in info box
 var filmListData = [];
 var filmPage=0;
 var SERVEUR_NAME_PUBLIC='POR80090940';
+var sort='UPDATE_DB_DATE';
+var sortsens='-1';
 
 // DOM Ready =============================================================
 $(document).ready(function() {
@@ -23,9 +25,52 @@ $(document).ready(function() {
 
   $('#filmList table tbody').on('click', 'td a.linkshowRequestForm', showRequestForm);
 
+  //TRi sur colonne
+  $('a#tri_original_title').on('click', tri_original_title );  
+  $('a#tri_release_date').on('click', tri_release_date );  
+  $('a#tri_UPDATE_DB_DATE').on('click', tri_UPDATE_DB_DATE );  
+  
+
 
 
 });
+
+//Appel avec tri original_title
+function tri_original_title() {  
+  tri('original_title');  
+}
+
+//Appel avec tri release_date
+function tri_release_date() {  
+   tri('release_date');  
+}
+
+//Appel avec tri tri_UPDATE_DB_DATE
+function tri_UPDATE_DB_DATE() {  
+   tri('UPDATE_DB_DATE');  
+}
+
+//tri colonne commun
+function tri(colonne) {
+  sort=colonne;
+  document.getElementById('tri_original_title').innerHTML='(-)';
+  document.getElementById('tri_release_date').innerHTML='(-)';
+  document.getElementById('tri_UPDATE_DB_DATE').innerHTML='(-)';
+  if (sortsens=='1') {
+    sortsens='-1';
+    document.getElementById('tri_'+colonne).innerHTML ='(Desc)';
+    //document.getElementById("link").innerHTML = "Next Text";
+  } else {
+    sortsens='1';
+    document.getElementById('tri_'+colonne).innerHTML ='(Asc)';
+  }
+
+
+
+  filmName=$('#searchFilm fieldset input#inputFilm').val();
+  //alert('hoho'+filmName);
+  populateTable(filmName);
+}
 
 //=== POPUP de de saisie d'un detail d'une demande de film
 function showRequestForm(event){
@@ -106,7 +151,7 @@ function populateTable(filmName) {
 
 
 function populateCount(filmName) {
-  $.getJSON( '/films/list?filmname='+filmName+'&infocount=O', function( data ) {
+  $.getJSON( 'films/list?filmname='+filmName+'&infocount=O', function( data ) {
 
       // For each item in our JSON, add a table row and cells to the content string
       //$.each(data, function(){
@@ -121,11 +166,12 @@ function populateCount(filmName) {
 // Fill table with data
 function populateTablePage(filmName,page) {
   console.log('populateTable filmName:'+filmName);
+  console.log('sort='+sort+'&sortsens='+sortsens);
   // Empty content string
   var tableContent = '';
 
   // jQuery AJAX call for JSON
-  $.getJSON( '/films/list?filmname='+filmName+'&skip='+page, function( data ) {
+  $.getJSON( 'films/list?filmname='+filmName+'&skip='+page+'&sort='+sort+'&sortsens='+sortsens, function( data ) {
 
     // Stick our user data array into a userlist variable in the global object
     filmListData = data;
@@ -153,15 +199,24 @@ function populateTablePage(filmName,page) {
       console.log('fichierPresentSurServeur:'+fichierPresentSurServeur);
       if(fichierPresentSurServeur) {
         //StatusFichierImg='<A href="#" class=linkshowRequestForm rel="' + this._id + '" title="Reserver le film"><img width="10" src="../images/ok.png"></img></A>'
-        StatusFichierImg='<img width="10" src="../images/ok.png"></img></A>'
+        StatusFichierImg='<img width="10" src="images/ok.png"></img></A>'
       } else  {
-        StatusFichierImg='<A href="#" class=linkshowRequestForm rel="' + this._id + '"> <img width="10" src="../images/ko.png"></img></a>'
+        StatusFichierImg='<A href="#" class=linkshowRequestForm rel="' + this._id + '"> <img width="10" src="images/ko.png"></img></a>'
       }
 
       //StatusFichierImg='<A href="#" class=linkshowRequestForm rel="' + this._id + '" title="Reserver le film"><img width="10" src="../images/ok.png"></img></A>'
 
       tableContent += '<td>'+StatusFichierImg+'<a href="#" class="linkshowfilm" rel="' + this._id + '" title="Show Details">' + _titre+' </a></td>';
       tableContent += '<td>' + this.release_date + '</td>';
+
+      //Affichage de la date de mise a jour du film
+      //Suppression de l'heure, on laisse juste la date !
+      _UPDATE_DB_DATE = this.UPDATE_DB_DATE;
+      if (_UPDATE_DB_DATE) {
+        _UPDATE_DB_DATE = _UPDATE_DB_DATE.slice(0,10);
+      }
+      tableContent += '<td>' + _UPDATE_DB_DATE + '</td>';
+
       tableContent += '<td><a href="#" class="linkDetailfilm" rel="' + this._id + '">detail</a></td>';
       tableContent += '</tr>';
     });
@@ -292,7 +347,8 @@ function showFilmInfo(event) {
   //Populate Info Box
   $('#filmInfoOriginal_title').text(thisFilmObject.original_title);
   $('#filmInfoRelease_date').text(thisFilmObject.release_date);
-  $('#filmInfo_Rico_fileDate').text(thisFilmObject.RICO_FICHIER[0].fileDate.slice(0,10));
+//  $('#filmInfo_Rico_fileDate').text(thisFilmObject.RICO_FICHIER[0].fileDate.slice(0,10));
+  $('#filmInfoUPDATE_DB_DATE').text(thisFilmObject.UPDATE_DB_DATE.slice(0,10));
 
   /* Solution a trouver pour indiquer que le fichier n'est oas sur le serveur
   if(thisFilmObject.RICO.StatusFichier=='OK') {
@@ -301,7 +357,7 @@ function showFilmInfo(event) {
     $("#filmInfo_Rico_StatusFichier").attr("src","../images/ko.png");
   }
   */
-  $("#filmInfo_Rico_StatusFichier").attr("src","../images/ok.png");
+  $("#filmInfo_Rico_StatusFichier").attr("src","images/ok.png");
 
   $('#filmInfoOverview').text(thisFilmObject.overview);
   $('#filmInfoPopularity').text(thisFilmObject.popularity);

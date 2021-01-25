@@ -19,8 +19,12 @@ block content
     #filmList
       table
         thead
-          th Titre (titre FR)
+          th Titre (titre FR) 
+            a#tri_original_title(href="#").sortClass (-)
           th Date de sortie
+            a#tri_release_date(href="#").sortClass (-)
+          th Date Rico
+            a#tri_UPDATE_DB_DATE(href="#").sortClass (-)
           th Detail
         tbody
     // /FILM LIST
@@ -37,7 +41,7 @@ block content
         |  <span id='filmInfoRelease_date'></span>
         br
         strong Date Rico:
-        |  <span id='filmInfo_Rico_fileDate'></span>
+        |  <span id='filmInfoUPDATE_DB_DATE'></span>
         br
         |  <img id='filmInfoPoster_path'   width="180"></img>
         br

@@ -22,7 +22,7 @@ function populateTablePage(filmName,page) {
   var tableContent = '';
 
   // jQuery AJAX call for JSON
-  $.getJSON( '/request/list?username='+filmName, function( data ) {
+  $.getJSON( 'request/list?username='+filmName, function( data ) {
 
     // Stick our user data array into a userlist variable in the global object
     filmListData = data;

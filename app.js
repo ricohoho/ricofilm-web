@@ -6,6 +6,8 @@ var logger = require('morgan');
 
 // Database
 var mongo = require('mongodb');
+//20200124
+var MongoClient = require('mongodb').MongoClient; 
 var monk = require('monk');
 var db = monk('localhost:27017/ricofilm');
 //var db = monk('mongodb://myUserAdmin:rineka5993@localhost:27017/ricofilm');
@@ -31,6 +33,10 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
+
+//app.use('/ricofilm', express.static('public'));
+app.use('/ricofilm', express.static(__dirname + '/public'));
+
 // Make our db accessible to our router
 app.use(function(req,res,next){
     req.db = db;
@@ -41,6 +47,12 @@ app.use('/', indexRouter);
 app.use('/users', usersRouter);
 app.use('/films', filmsRouter);
 app.use('/request', resquestRouter);
+
+app.use('/ricofilm/', indexRouter);
+app.use('/ricofilm/users', usersRouter);
+app.use('/ricofilm/films', filmsRouter);
+app.use('/ricofilm/request', resquestRouter);
+
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
