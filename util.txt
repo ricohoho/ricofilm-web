@@ -1,0 +1,15 @@
+ scp -P 4322 -p root@davic.mkdh.fr:/home/streaming/films/Le.Gout.Des.Autres.2000.FRENCH.BRRip.XviD.AC3-NoTag/Le.Gout.Des.Autres.2000.FRENCH.BRRip.XviD.AC3-NoTag.avi ./
+
+//Requette do,nant le nb de fichier par films
+db.getCollection('films').aggregate(
+[
+   {
+      $project: {
+         item: 1,
+         numberOfColors: { $cond: { if: { $isArray: "$RICO_FICHIER" }, then: { $size: "$RICO_FICHIER" }, else: "NA"} }
+      }
+   },
+    { $sort: { numberOfColors: -1} }
+] )
+
+ 

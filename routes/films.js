@@ -132,14 +132,7 @@ if(!_sortsens) {
   optionBD = JSON.parse(optionBDString);
 
   
-  /*
-  var optionBD = {
-    "limit": 30,
-    "skip": 0,
-    "sort": [['title','1']]
-    // "sort": [['field1','asc'], ['field2','desc']]
-  }
-*/
+
   if(! _infocount) {
 
     collection.find(objrequete,optionBD,function(e,docs){
