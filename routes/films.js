@@ -21,14 +21,25 @@ router.get('/', function(req, res, next) {
 
 /* GET list film */
 router.get('/list', function(req, res) {
+
   var db = req.db;
   var collection = db.get('films');
   var _filmname=req.query.filmname;
+  //Skip : Commencer a afficher la liste à partie de la ligne = Skip
   var _skip=req.query.skip;
   var _infocount=req.query.infocount;
   //TRi ! 2021/01
   var _sort=req.query.sort;
   var _sortsens=req.query.sortsens;
+
+  var _limit=req.query.limit;
+  if (!_limit) {
+    _limit=20;
+  } else {
+    _limit=parseInt(_limit, 10);
+  }
+
+  var _NbFilms=0;
 
   if(!_skip) {
     _skip=0;
@@ -105,26 +116,9 @@ if(!_sortsens) {
   }
   */
   console.log('sortComplet'+sortComplet);
-  /*
-  var optionBD={
-    "limit": 20,
-    "skip": _skip,
-    //"sort":'RICO.fileDate'
-    //"sort":"-RICO.fileDate"
-    //"sort":['RICO.fileDate','desc']
-    //"sort":['title','asc']
-    //"sort": sortComplet
-    //    "sort": "UPDATE_DB_DATE"
-    //sort":['release_date','asc']
-    //"sort":['original_title','asc']
-    //    "sort":[['original_title','asc']]
-//    "sort":[_sort,_sortsens]
-//    "sort": sortComplet
-    sortComplet
-  };
-  */
+
   optionBDString ='{' +
-            '"limit": 20,'+
+            '"limit": '+_limit+','+
             '"skip":'+ _skip+',' +
             '"sort":{"'+_sort+'":'+_sortsens+'}'+
             '}';
@@ -135,10 +129,20 @@ if(!_sortsens) {
 
   if(! _infocount) {
 
+    collection.count(objrequete,{},function(e,count){
+      console.log('Nb count docs'+count);      
+      _NbFilms=count;
+    });
+
     collection.find(objrequete,optionBD,function(e,docs){
+      //Add header info
+      res.append('NbFilms', _NbFilms);
       res.json(docs);
       console.log('retour XML');
-    });//.sort( { release_date: 1 } ).limit(5);
+    });
+
+
+
 
 /*  ===> tri focntionne!!
         optionBD={limit : 4, "sort" : {"original_title":1}} ;
