@@ -3,6 +3,7 @@ var router = express.Router();
 var RECHERCHE_ACTEUR='acteur:'
 var RECHERCHE_TITRE='titre:'
 var RECHERCHE_ID='id:'
+var RECHERCHE_YYYYMM='yyyymm';
 /*
 URL :
      -> detail du film AVA
@@ -69,7 +70,7 @@ if(!_sortsens) {
 
   
 
-  console.log('requete: '+_filmname );
+  console.log('requete _filmname: '+_filmname );
   if(_filmname) {
     console.log('Filtre');
     //var srequete='{"original_title":"'+_filmname+'"}';
@@ -87,6 +88,20 @@ if(!_sortsens) {
       console.log('requete [id]: <'+_filmname+'>' );
       int_id = parseInt(_filmname, 10);;
       var objrequete = {"id":int_id};
+    } else if (_filmname.indexOf(RECHERCHE_YYYYMM)==0) {
+        _filmname=_filmname.substring(_filmname.indexOf(RECHERCHE_YYYYMM)+RECHERCHE_YYYYMM.length+1);
+        console.log('requete [yyyymm]: <'+_filmname+'>' );
+        _yyyy =  _filmname.substring(0,4);
+        _mm   =  _filmname.substring(4,6);
+        console.log('requete [_yyyy]: <'+_yyyy+'>' );
+        console.log('requete [_mm]: <'+_mm+'>' );
+        _DateMin = _yyyy+'-'+_mm+'-01';
+        _DateMax = _yyyy+'-'+_mm+'-30';
+        //db.bios.find( { birth: { $gt: new Date('1940-01-01'), $lt: new Date('1960-01-01') } } )
+      var objrequete ={ 
+                        UPDATE_DB_DATE: { $gt: new Date(_DateMin), $lt: new Date(_DateMax) } 
+                      };
+
     } else if (_filmname.indexOf(RECHERCHE_TITRE)==0) {
       _filmname=_filmname.substring(_filmname.indexOf(RECHERCHE_TITRE)+RECHERCHE_TITRE.length);
       console.log('requete [titre]: '+_filmname );

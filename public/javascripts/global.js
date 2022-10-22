@@ -260,6 +260,7 @@ function detailFilmObjet(arrayPosition) {
     $('#XfilmInfoCrew_Name0').attr("onclick","modal.style.display='none';populateTable('"+thisFilmObject.credits.crew[0].name+"');");
     $('#XfilmInfoOverview').text(thisFilmObject.overview);
     $('#XfilmInfoPopularity').text(thisFilmObject.popularity);
+    $('#XmovieDBURL').attr("href",'https://www.themoviedb.org/movie/'+thisFilmObject.id);    
     $("#XfilmInfoPoster_path").attr("src","https://image.tmdb.org/t/p/original/"+thisFilmObject.poster_path);
 
 
