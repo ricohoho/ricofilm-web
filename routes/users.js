@@ -14,7 +14,7 @@ router.get('/login', function(req, res, next) {
    	var _pwd=req.query.pwd;
   	//res.send('User = '+_user);
   	if (_user=='lulu' && _pwd=='lulu') {
-  		res.send('{"result":"succes"}');
+  		res.send('{"result":"vid.html"}');
   	} else  {
   		res.send('{"result":"failed"}');
   	}

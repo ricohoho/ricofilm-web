@@ -1,3 +1,4 @@
+const { authJwt } = require("../app/middlewares");
 var express = require('express');
 var router = express.Router();
 
@@ -23,8 +24,9 @@ router.get('/', function(req, res, next) {
 */
 
 
-/* GET userlist. */
-router.get('/list'  , function(req, res) {
+/* GET userlist. */ 
+//[authJwt.verifyToken],
+router.get('/list' , [authJwt.verifyToken],function(req, res) {
   var db = req.db;
   var collection = db.get('request');
 
@@ -69,7 +71,7 @@ router.get('/list'  , function(req, res) {
   var srequete = '{ '+
                       srequete+
                      '}';
-console.log('srequete: '+srequete );
+  console.log('srequete: '+srequete );
 
   var objrequete = JSON.parse(srequete);
 
@@ -106,13 +108,17 @@ router.post('/edit', function(req, res, next){
     console.log('editrequest: file'+file );
     collection.update({'id':req.body.id}, 
     { $set: {'status': status} }, function(err, result) { 
-      //if(err) { throw err; }       
+      if(err) { 
+        console.log('editrequest: erreur'+err );
+        throw err; 
+      }       
       //db.close();       
       //res.redirect('/'); 
         res.send(
             (err === null) ? { msg: '' } : { msg: err }
         );
     }); 
+    console.log('editrequest: Fin ');
 });
 
 module.exports = router;

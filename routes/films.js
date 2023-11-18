@@ -1,6 +1,8 @@
+const { authJwt } = require("../app/middlewares");
 var express = require('express');
 var router = express.Router();
 var RECHERCHE_ACTEUR='acteur:'
+var RECHERCHE_REAL='real:'
 var RECHERCHE_TITRE='titre:'
 var RECHERCHE_ID='id:'
 var RECHERCHE_YYYYMM='yyyymm';
@@ -17,11 +19,49 @@ URL :
 /* GET home page. */
 router.get('/', function(req, res, next) {
   //RICO : index  est le nom du tempate .jade !
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
   res.render('index', { title: 'RicoFilm' });
 });
 
+
 /* GET list film */
-router.get('/list', function(req, res) {
+/* liste rapide utilisé pour la liste de selecion de recherche */
+router.get('/listselect', [authJwt.verifyToken], function(req, res) {
+  var db = req.db;
+  var collection = db.get('films');
+  var _filmname=req.query.filmname;  
+  var _skip=0;
+  var _limit=0;
+  var _sort='original_title';
+  var _sortsens='1';
+  //PAs de filtre
+  var srequete='{}';
+  var objrequete = JSON.parse(srequete);
+
+  const projection={original_title:1};
+
+  optionBDString ='{' +          
+            '"projection":{ "id": 1,"original_title":1},'+
+            '"limit": '+_limit+','+
+            '"skip":'+ _skip+',' +
+            '"sort":{"'+_sort+'":'+_sortsens+'}'+
+            '}';
+  console.log('optionBD:'+optionBDString);
+  optionBD = JSON.parse(optionBDString);
+    
+  collection.find(objrequete,optionBD,function(e,docs){
+    res.json(docs);
+    console.log('retour XML:docs');
+  });
+});
+
+/* GET list film */
+router.get('/list', [authJwt.verifyToken], function(req, res) {
+
+  console.log('film/list:');
+  //res.header("Access-Control-Allow-Origin", "*");
+  //res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
 
   var db = req.db;
   var collection = db.get('films');
@@ -83,6 +123,10 @@ if(!_sortsens) {
       _filmname=_filmname.substring(_filmname.indexOf(RECHERCHE_ACTEUR)+RECHERCHE_ACTEUR.length);
       console.log('requete [acteur]: '+_filmname );
       var objrequete = {"credits.cast.name":{'$regex' : _filmname, '$options' : 'i'}};
+    } else if (_filmname.indexOf(RECHERCHE_REAL)==0) {
+      _filmname=_filmname.substring(_filmname.indexOf(RECHERCHE_REAL)+RECHERCHE_REAL.length);
+      console.log('requete [real]: '+_filmname );
+      var objrequete = {"credits.crew.name":{'$regex' : _filmname, '$options' : 'i'}};
     } else if (_filmname.indexOf(RECHERCHE_ID)==0) {
       _filmname=_filmname.substring(_filmname.indexOf(RECHERCHE_ID)+RECHERCHE_ID.length);
       console.log('requete [id]: <'+_filmname+'>' );
@@ -101,7 +145,6 @@ if(!_sortsens) {
       var objrequete ={ 
                         UPDATE_DB_DATE: { $gt: new Date(_DateMin), $lt: new Date(_DateMax) } 
                       };
-
     } else if (_filmname.indexOf(RECHERCHE_TITRE)==0) {
       _filmname=_filmname.substring(_filmname.indexOf(RECHERCHE_TITRE)+RECHERCHE_TITRE.length);
       console.log('requete [titre]: '+_filmname );
@@ -201,6 +244,8 @@ if(!_sortsens) {
 
   router.get('/detail/:film', function(req, res) {
     console.log('get(x:film' );
+    res.header("Access-Control-Allow-Origin", "*");
+    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
     var db = req.db;
     var collection = db.get('films');
 
