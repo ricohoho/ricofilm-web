@@ -1,4 +1,4 @@
-const { authJwt } = require("../app/middlewares");
+//const { authJwt } = require("../app/middlewares");
 var express = require('express');
 var router = express.Router();
 
@@ -21,12 +21,17 @@ router.get('/', function(req, res, next) {
     "file":"10ème Chambre, Instants d'Audience (2004) - Raymond Depardon - Copie.avi",
     "size" : 93121.0
 }
+
+//http://localhost:3000/request/ ou http://localhost:3000/ricofilm/request ==> donne la liste en html Express !
+
+
 */
 
 
-/* GET userlist. */ 
+/* GET requestlist. */ 
 //[authJwt.verifyToken],
-router.get('/list' , [authJwt.verifyToken],function(req, res) {
+//router.get('/list' , [authJwt.verifyToken],function(req, res) {
+router.get('/list' ,function(req, res) {
   var db = req.db;
   var collection = db.get('request');
 

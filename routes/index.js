@@ -6,4 +6,5 @@ router.get('/', function(req, res, next) {
   res.render('index', { title: 'RicoFilm' });
 });
 
+console.log('router');
 module.exports = router;

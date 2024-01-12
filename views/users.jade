@@ -7,24 +7,20 @@ html
   body
     block content
     script(src='https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js')
-    script(src='../javascripts/request.js')
+    script(src='../javascripts/users.js')
 
 
-block content2
+
+block content3
   #wrapper_request
-    // REQUEST LIST
-    h5#liste_resultat Liste des requetes :
+    // USER LIST
+    h5#liste_resultat Liste des utilisateurs :
     #requestList
       table
         thead
-          th Username
-          th id
-          th title
-          th serveur
-          th path
-          th file
-          th size
-          th date(fichier)
+          th username
+          th email
+          th roles         
           th status
         tbody
-    // REQUEST LIST
+    // USER LIST
