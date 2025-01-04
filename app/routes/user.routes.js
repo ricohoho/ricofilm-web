@@ -24,11 +24,19 @@ module.exports = function(app) {
     controller.adminBoard
   );
 
-//liste des utilsiateutrs
+//liste des USER
 app.get("/api/user/list",
     //acces moderateur obligatoire
-    [authJwt.verifyToken, authJwt.isModerator],
+    //[authJwt.verifyToken, authJwt.isModerator],
+    [authJwt.verifyToken, authJwt.isAdmin],
     controller.userList
   );
 
+//update USER
+ app.put("/api/user/:id", 
+    controller.update
+  );
+
 };
+
+

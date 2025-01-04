@@ -36,7 +36,7 @@ function populateTablePage(filmName,page) {
       tableContent += '<td>' + this.username + '</td>';
       tableContent += '<td>' + this.email + '</td>';
       tableContent += '<td>' + this.rolesString + '</td>';
-      tableContent += '<td>' + this.status + '</td>';
+      tableContent += '<td>' + this.active + '</td>';
       tableContent += '</tr>';
     });
 

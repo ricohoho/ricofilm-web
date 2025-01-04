@@ -1,6 +1,7 @@
 const { authJwt } = require("../app/middlewares");
 var express = require('express');
 var router = express.Router();
+
 var RECHERCHE_ACTEUR='acteur:'
 var RECHERCHE_REAL='real:'
 var RECHERCHE_TITRE='titre:'
@@ -24,6 +25,38 @@ router.get('/', function(req, res, next) {
   res.render('index', { title: 'RicoFilm' });
 });
 
+
+
+/* GET list film */
+/* renvoi les liens des images des n dernier film ajoutés  : 2024/08/25 */
+router.get('/listmenufilmimage',  function(req, res) {
+  var db = req.db;
+  var collection = db.get('films');
+  var _filmname=req.query.filmname;  
+  var _skip=0;
+  var _limit=10;
+  var _sort='UPDATE_DB_DATE';
+  var _sortsens='-1';
+  //PAs de filtre
+  var srequete='{}';
+  var objrequete = JSON.parse(srequete);
+
+  const projection={original_title:1};
+
+  optionBDString ='{' +          
+            '"projection":{ "id": 1,"original_title":1,"title":1,"UPDATE_DB_DATE":1,"backdrop_path":1,"credits":1},'+
+            '"limit": '+_limit+','+
+            '"skip":'+ _skip+',' +
+            '"sort":{"'+_sort+'":'+_sortsens+'}'+
+            '}';
+  console.log('optionBD:'+optionBDString);
+  optionBD = JSON.parse(optionBDString);
+    
+  collection.find(objrequete,optionBD,function(e,docs){
+    res.json(docs);
+    console.log('retour XML:docs');
+  });
+});
 
 /* GET list film */
 /* liste rapide utilisé pour la liste de selecion de recherche */
@@ -279,6 +312,7 @@ router.post('/add', function(req, res) {
     );
   });
 });
+
 
 
 });

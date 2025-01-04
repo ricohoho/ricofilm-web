@@ -11,6 +11,7 @@ exports.signup = (req, res) => {
     username: req.body.username,
     email: req.body.email,
     password: bcrypt.hashSync(req.body.password, 8),
+    active: false
   });
 
   user.save((err, user) => {
@@ -20,6 +21,7 @@ exports.signup = (req, res) => {
     }
 
     if (req.body.roles) {
+      //Si un ou des roles sont transmis, alors on recerche les id de la collection ROLE et on l'afecte à l'utilisateur créé
       Role.find(
         {
           name: { $in: req.body.roles },
@@ -42,6 +44,7 @@ exports.signup = (req, res) => {
         }
       );
     } else {
+      //Si pas de role d'indiqué, on cherche l'id correspondnat au role  "user" et on l'affecte au user créé
       Role.findOne({ name: "user" }, (err, role) => {
         if (err) {
           res.status(500).send({ message: err });
@@ -113,9 +116,12 @@ exports.signin = (req, res) => {
 
 exports.signout = async (req, res) => {
   try {
+    console.log('signout debut');
     req.session = null;
     return res.status(200).send({ message: "You've been signed out!" });
   } catch (err) {
+    console.log('signout err');
+    console.log(err);
     this.next(err);
   }
 };

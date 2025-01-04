@@ -28,6 +28,8 @@ var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 var filmsRouter = require('./routes/films');
 var resquestRouter = require('./routes/request');
+var imageRouter = require('./routes/image');
+//var mailRouter = require('./routes/mail');
 
 
 var app = express();
@@ -44,7 +46,6 @@ var app = express();
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
-//app.set('view engine', 'jade');
 app.set('view engine', 'pug');
 
 app.use(logger('dev'));
@@ -95,16 +96,23 @@ app.use('/', indexRouter);
 app.use('/users', usersRouter);
 app.use('/films', filmsRouter);
 app.use('/request', resquestRouter);
+app.use('/image', imageRouter);
+
 
 app.use('/ricofilm/', indexRouter);
 app.use('/ricofilm/users', usersRouter);
 app.use('/ricofilm/films', filmsRouter);
 app.use('/ricofilm/request', resquestRouter);
+app.use('/ricofilm/image', imageRouter);
+
+
 
 
 // routes Authentification
 require("./app/routes/auth.routes")(app);
 require("./app/routes/user.routes")(app);
+require("./app/routes/request.routes")(app);
+require("./app/routes/mail.routes")(app);
 
 
 // =========== Option Cors ==========
