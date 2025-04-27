@@ -1,12 +1,15 @@
 const { authJwt } = require("../app/middlewares");
 var express = require('express');
 var router = express.Router();
+const { getSQLMongo } = require('../app/controllers/film.controller');
+const { callExternalServiceMistral } = require('../app/services/externalService');
 
 var RECHERCHE_ACTEUR='acteur:'
 var RECHERCHE_REAL='real:'
 var RECHERCHE_TITRE='titre:'
 var RECHERCHE_ID='id:'
 var RECHERCHE_YYYYMM='yyyymm';
+var RECHERCHE_IA='ia:';
 /*
 URL :
      -> detail du film AVA
@@ -90,7 +93,7 @@ router.get('/listselect', [authJwt.verifyToken], function(req, res) {
 });
 
 /* GET list film */
-router.get('/list', [authJwt.verifyToken], function(req, res) {
+router.get('/list', [authJwt.verifyToken], async function(req, res) {
 
   console.log('film/list:');
   //res.header("Access-Control-Allow-Origin", "*");
@@ -185,6 +188,28 @@ if(!_sortsens) {
                         {original_title:{'$regex' : _filmname, '$options' : 'i'}},
                         {title:{'$regex' : _filmname, '$options' : 'i'}}
                      ]};
+    } else if (_filmname.indexOf(RECHERCHE_IA)==0) {
+      console.log('requete init IA: '+_filmname );
+      _filmname=_filmname.substring(_filmname.indexOf(RECHERCHE_IA)+RECHERCHE_IA.length);
+      console.log('requete IA: '+_filmname );
+      const requestData = { requete: _filmname};
+      try {
+        var srequete = await callExternalServiceMistral( requestData);
+        // var objrequete= {};      
+        console.log('srequete=',srequete );
+        // Vérifie si la réponse est déjà un objet JSON, en effet sur les requetes simple 
+        // on a directment un json par exmple : { 'credits.cast.name': 'Aaron Taylor-Johnson' }
+        if (typeof srequete === 'object') {
+          var objrequete = srequete;
+        } else {
+          var objrequete = JSON.parse(srequete);
+        }
+        
+      } catch (error) {
+        console.error('Error calling external service IA:', error);
+        throw error;
+      }
+      console.log('requete IA: '+objrequete );
     } else {
       var objrequete = { $or: [
                         {original_title:{'$regex' : _filmname, '$options' : 'i'}},
@@ -220,17 +245,22 @@ if(!_sortsens) {
 
   if(! _infocount) {
 
-    collection.count(objrequete,{},function(e,count){
-      console.log('Nb count docs'+count);      
-      _NbFilms=count;
-    });
+    try {
+      collection.count(objrequete,{},function(e,count){
+        console.log('Nb count docs'+count);      
+        _NbFilms=count;
+      });
 
-    collection.find(objrequete,optionBD,function(e,docs){
-      //Add header info
-      res.append('NbFilms', _NbFilms);
-      res.json(docs);
-      console.log('retour XML');
-    });
+      collection.find(objrequete,optionBD,function(e,docs){
+        //Add header info
+        res.append('NbFilms', _NbFilms);
+        res.json(docs);
+        console.log('retour XML');
+      });
+    } catch (error) {
+      console.log('error execution Mongo'+error);
+      res.send(error);
+    }
 
 
 

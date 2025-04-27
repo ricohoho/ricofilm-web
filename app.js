@@ -18,7 +18,10 @@ var mongo = require('mongodb');
 var MongoClient = require('mongodb').MongoClient; 
 var monk = require('monk');
 //Version Local
-var db = monk('mongo-container:27017/ricofilm');
+//var db = monk('localhost:27017/ricofilm');
+//var db = monk('mongo-container:27017/ricofilm');
+var db = monk(`${dbConfig.HOST}:${dbConfig.PORT}/${dbConfig.DB}`);
+//var db = monk(`172.21.82.150:27017/ricofilm`);
 //var db = monk('mongodb://ricoAdmin:rineka5993@davic.mkdh.fr:27017/ricofilm');
 
 
@@ -114,7 +117,7 @@ require("./app/routes/user.routes")(app);
 require("./app/routes/request.routes")(app);
 require("./app/routes/mail.routes")(app);
 
-
+ 
 // =========== Option Cors ==========
 /*
 const cors = require('cors');
