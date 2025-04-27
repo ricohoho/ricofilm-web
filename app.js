@@ -18,7 +18,7 @@ var mongo = require('mongodb');
 var MongoClient = require('mongodb').MongoClient; 
 var monk = require('monk');
 //Version Local
-var db = monk('localhost:27017/ricofilm');
+var db = monk('mongo-container:27017/ricofilm');
 //var db = monk('mongodb://ricoAdmin:rineka5993@davic.mkdh.fr:27017/ricofilm');
 
 
