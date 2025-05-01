@@ -207,7 +207,9 @@ if(!_sortsens) {
         
       } catch (error) {
         console.error('Error calling external service IA:', error);
-        throw error;
+        var objrequete = {"id":"0"};
+        var objrequete = JSON.parse(srequete);
+        //throw error;
       }
       console.log('requete IA: '+objrequete );
     } else {

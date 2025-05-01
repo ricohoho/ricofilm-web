@@ -1,5 +1,6 @@
 var createError = require('http-errors');
 var express = require('express');
+const dotenv = require('dotenv');
 var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
@@ -9,30 +10,42 @@ var logger = require('morgan');
 //EF 20231028 authent
 const cors = require("cors");
 const cookieSession = require("cookie-session");
-const dbConfig = require("./app/config/db.config");
+
+
+// Détermine l'environnement actif (par défaut : 'local')
+const env = process.env.NODE_ENV || 'local';
+// Charge le fichier .env correspondant
+dotenv.config({ path: path.resolve(__dirname, `.env.${env}`) });
+console.log(`✅ Loaded configuration for environment: ${env}`);
+
 
 
 // Database
-var mongo = require('mongodb');
-//20200124
-var MongoClient = require('mongodb').MongoClient; 
 var monk = require('monk');
+// Construire la chaîne de connexion en fonction de la présence de DB_USER et DB_PASSWORD
+const dbUser = process.env.DB_USER;
+const dbPassword = process.env.DB_PASSWORD;
+const authPart = dbUser && dbPassword ? `${dbUser}:${dbPassword}@` : '';
+
 //Version Local
 //var db = monk('localhost:27017/ricofilm');
 //var db = monk('mongo-container:27017/ricofilm');
-var db = monk(`${dbConfig.HOST}:${dbConfig.PORT}/${dbConfig.DB}`);
+//===> avec fichier de conf <===============================
+//const dbConfig = require("./app/config/db.config");
+//var db = monk(`${dbConfig.HOST}:${dbConfig.PORT}/${dbConfig.DB}`);
+//============================================================
 //var db = monk(`172.21.82.150:27017/ricofilm`);
 //var db = monk('mongodb://ricoAdmin:rineka5993@davic.mkdh.fr:27017/ricofilm');
-
-
-
+//===> Utilisation des variables d'environnement pour la connexion <===============================
+//const db = monk(`mongodb://${process.env.DB_USER}:${process.env.DB_PASSWORD}@${process.env.DB_HOST}:${process.env.DB_PORT}/${process.env.DB_NAME}`);
+const db = monk(`mongodb://${authPart}${process.env.DB_HOST}:${process.env.DB_PORT}/${process.env.DB_NAME}`);
+//============================================================
 
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 var filmsRouter = require('./routes/films');
 var resquestRouter = require('./routes/request');
 var imageRouter = require('./routes/image');
-//var mailRouter = require('./routes/mail');
 
 
 var app = express();
@@ -71,7 +84,7 @@ const dbm = require("./app/models");
 const Role = dbm.role;
 
 dbm.mongoose
-  .connect(`mongodb://${dbConfig.HOST}:${dbConfig.PORT}/${dbConfig.DB}`, {
+  .connect(`mongodb://${authPart}${process.env.DB_HOST}:${process.env.DB_PORT}/${process.env.DB_NAME}`, {
     useNewUrlParser: true,
     useUnifiedTopology: true
   })
@@ -108,15 +121,11 @@ app.use('/ricofilm/films', filmsRouter);
 app.use('/ricofilm/request', resquestRouter);
 app.use('/ricofilm/image', imageRouter);
 
-
-
-
 // routes Authentification
 require("./app/routes/auth.routes")(app);
 require("./app/routes/user.routes")(app);
 require("./app/routes/request.routes")(app);
 require("./app/routes/mail.routes")(app);
-
  
 // =========== Option Cors ==========
 /*
@@ -128,8 +137,6 @@ var corsOptions = {
 }
 app.use(cors(corsOptions));
 */
-
-
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

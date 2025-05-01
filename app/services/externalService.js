@@ -1,18 +1,34 @@
 // services/externalService.js
 const axios = require('axios');
-const iaConfig = require("../../app/config/ia.config");
+//const iaConfig = require("../../app/config/ia.config");
+const dotenv = require('dotenv');
+var path = require('path');
 
 // Function to call the external service
 const  callExternalServiceMistral = async (requestData) => {
   try {
     console.log('requestData='+requestData)
-    const response = await axios.post(`http://${iaConfig.HOST}:${iaConfig.PORT}/${iaConfig.URL}`,requestData); //172.17.0.3
+
+    // Détermine l'environnement actif (par défaut : 'local')
+    const env = process.env.NODE_ENV || 'local';
+    // Charge le fichier .env correspondant
+    dotenv.config({ path: path.resolve(__dirname, `.env.${env}`) });
+    console.log(`✅ Loaded configuration for environment: ${env}`);
+
+    const IA_HOST = process.env.IA_HOST;
+    const IA_PORT = process.env.IA_PORT;
+    const IA_URL = process.env.IA_URL;
+    console.log(`IA_HOST=${IA_HOST}`);
+    console.log(`IA_PORT=${IA_PORT}`);
+    console.log(`IA_URL=${IA_URL}`);
+
+    const response = await axios.post(`http://${IA_HOST}:${IA_PORT}/${IA_URL}`,requestData); //172.17.0.3
     
     if (response.status === 200 && response.data) {
 
 
-          // Vérifie si la réponse est déjà un objet JSON, en effet sur les requetes simple 
-          // on a directment un json par exmple : { 'credits.cast.name': 'Aaron Taylor-Johnson' }
+        // Vérifie si la réponse est déjà un objet JSON, en effet sur les requetes simple 
+        // on a directment un json par exmple : { 'credits.cast.name': 'Aaron Taylor-Johnson' }
         if (typeof response.data === 'object') {
           console.log('La réponse est un objet JSON:', response.data);
         } 
