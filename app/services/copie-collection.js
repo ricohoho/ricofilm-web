@@ -1,6 +1,7 @@
 const monk = require('monk');
 const sourceDb = monk('mongodb://ricoAdmin:rineka5993@davic.mkdh.fr:27017/ricofilm');
-const targetDb = monk('mongodb://172.21.82.150:27017/ricofilm');
+//const targetDb = monk('mongodb://172.21.82.150:27017/ricofilm');
+const targetDb = monk('mongodb://root:example@34.155.114.90:27017/ricofilm');
 
 const sourceCollection = sourceDb.get('films');
 const targetCollection = targetDb.get('films');
