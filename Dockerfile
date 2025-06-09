@@ -1,5 +1,7 @@
 # Spécifie l'image de base
 FROM node:latest
+#FROM node:18-alpine
+#FROM node:12-alpine
 # DÃ©finit le rÃ©pertoire de travail
 WORKDIR /app
 # Copie les fichiers de l'application
