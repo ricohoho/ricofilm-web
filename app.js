@@ -26,7 +26,7 @@ var monk = require('monk');
 const dbUser = process.env.DB_USER;
 const dbPassword = process.env.DB_PASSWORD;
 const authPart = dbUser && dbPassword ? `${dbUser}:${dbPassword}@` : '';
-
+console.log(`authPart=${authPart}`);
 //Version Local
 //var db = monk('localhost:27017/ricofilm');
 //var db = monk('mongo-container:27017/ricofilm');
@@ -82,6 +82,12 @@ app.use(
 );
 const dbm = require("./app/models");
 const Role = dbm.role;
+
+console.log("DB_HOST =", process.env.DB_HOST);
+console.log("DB_PORT =", process.env.DB_PORT);
+console.log("DB_NAME =", process.env.DB_NAME);
+console.log("authPart =", authPart);
+
 
 dbm.mongoose
   .connect(`mongodb://${authPart}${process.env.DB_HOST}:${process.env.DB_PORT}/${process.env.DB_NAME}`, {
