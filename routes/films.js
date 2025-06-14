@@ -10,6 +10,7 @@ var RECHERCHE_TITRE='titre:'
 var RECHERCHE_ID='id:'
 var RECHERCHE_YYYYMM='yyyymm';
 var RECHERCHE_IA='ia:';
+var RECHERCHE_IA2='ia2:';
 /*
 URL :
      -> detail du film AVA
@@ -188,13 +189,23 @@ if(!_sortsens) {
                         {original_title:{'$regex' : _filmname, '$options' : 'i'}},
                         {title:{'$regex' : _filmname, '$options' : 'i'}}
                      ]};
-    } else if (_filmname.indexOf(RECHERCHE_IA)==0) {
+    } else if (_filmname.indexOf(RECHERCHE_IA)==0 || _filmname.indexOf(RECHERCHE_IA2)==0) {
       console.log('requete init IA: '+_filmname );
-      _filmname=_filmname.substring(_filmname.indexOf(RECHERCHE_IA)+RECHERCHE_IA.length);
+      var iaChoice = '';
+      if (_filmname.indexOf(RECHERCHE_IA)==0) {
+        iaChoice=RECHERCHE_IA;
+      }
+      if (_filmname.indexOf(RECHERCHE_IA2)==0) {
+        iaChoice=RECHERCHE_IA2;
+      }
+      console.log('iaChoice: '+iaChoice );
+      
+      _filmname=_filmname.substring(_filmname.indexOf(iaChoice)+iaChoice.length);
       console.log('requete IA: '+_filmname );
       const requestData = { requete: _filmname};
       try {
-        var srequete = await callExternalServiceMistral( requestData);
+        
+        var srequete = await callExternalServiceMistral( iaChoice,requestData);
         // var objrequete= {};      
         console.log('srequete=',srequete );
         // Vérifie si la réponse est déjà un objet JSON, en effet sur les requetes simple 

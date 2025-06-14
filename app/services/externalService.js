@@ -5,7 +5,7 @@ const dotenv = require('dotenv');
 var path = require('path');
 
 // Function to call the external service
-const  callExternalServiceMistral = async (requestData) => {
+const  callExternalServiceMistral = async (iaChoice,requestData) => {
   try {
     console.log('requestData='+requestData)
 
@@ -15,9 +15,16 @@ const  callExternalServiceMistral = async (requestData) => {
     dotenv.config({ path: path.resolve(__dirname, `.env.${env}`) });
     console.log(`✅ Loaded configuration for environment: ${env}`);
 
+    //A mettre en var d'env.
+    var RECHERCHE_IA='ia:';
+    var RECHERCHE_IA2='ia2:';
+
     const IA_HOST = process.env.IA_HOST;
     const IA_PORT = process.env.IA_PORT;
-    const IA_URL = process.env.IA_URL;
+    var IA_URL = process.env.IA_URL;
+    if (iaChoice===RECHERCHE_IA2){
+      IA_URL = process.env.IA2_URL;
+    } 
     console.log(`IA_HOST=${IA_HOST}`);
     console.log(`IA_PORT=${IA_PORT}`);
     console.log(`IA_URL=${IA_URL}`);
