@@ -64,7 +64,8 @@ router.get('/listmenufilmimage',  function(req, res) {
 
 /* GET list film */
 /* liste rapide utilisé pour la liste de selecion de recherche */
-router.get('/listselect', [authJwt.verifyToken], function(req, res) {
+//router.get('/listselect', [authJwt.verifyToken], function(req, res) {
+router.get('/listselect', function(req, res) {
   var db = req.db;
   var collection = db.get('films');
   var _filmname=req.query.filmname;  
