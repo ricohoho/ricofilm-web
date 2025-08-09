@@ -64,8 +64,7 @@ router.get('/listmenufilmimage',  function(req, res) {
 
 /* GET list film */
 /* liste rapide utilisé pour la liste de selecion de recherche */
-//router.get('/listselect', [authJwt.verifyToken], function(req, res) {
-router.get('/listselect', function(req, res) {
+router.get('/listselect', [authJwt.verifyToken], function(req, res) {
   var db = req.db;
   var collection = db.get('films');
   var _filmname=req.query.filmname;  
@@ -95,7 +94,8 @@ router.get('/listselect', function(req, res) {
 });
 
 /* GET list film */
-router.get('/list', [authJwt.verifyToken], async function(req, res) {
+//router.get('/list', [authJwt.verifyToken], async function(req, res) {
+router.get('/list',  async function(req, res) {
 
   console.log('film/list:');
   //res.header("Access-Control-Allow-Origin", "*");
