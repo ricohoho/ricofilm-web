@@ -23,10 +23,24 @@ console.log(`✅ Loaded configuration for environment: ${env}`);
 // Database
 var monk = require('monk');
 // Construire la chaîne de connexion en fonction de la présence de DB_USER et DB_PASSWORD
+
+const dbPrefix = process.env.DB_PREFIX; // mongodb ou mongodb+srv
+const dbPrefixURL = dbPrefix ? `${dbPrefix}://` : 'mongodb://';
+console.log(`dbPrefixURL=${dbPrefixURL}`);
+
+const dbPostfix = process.env.DB_POSTFIX ;
+const dbPostfixURL = dbPostfix ? `${dbPostfix}` : '';
+console.log(`dbPostfix=${dbPostfixURL}`);
+
+
 const dbUser = process.env.DB_USER;
 const dbPassword = process.env.DB_PASSWORD;
+console.log(`dbUser=${dbUser}`);
+console.log(`dbPassword=${dbPassword}`);
 const authPart = dbUser && dbPassword ? `${dbUser}:${dbPassword}@` : '';
 console.log(`authPart=${authPart}`);
+const dbPortURL = process.env.DB_PORT ? `:${process.env.DB_PORT}` : '';
+console.log(`dbPortURL=${dbPortURL}`);
 //Version Local
 //var db = monk('localhost:27017/ricofilm');
 //var db = monk('mongo-container:27017/ricofilm');
@@ -38,7 +52,17 @@ console.log(`authPart=${authPart}`);
 //var db = monk('mongodb://ricoAdmin:rineka5993@davic.mkdh.fr:27017/ricofilm');
 //===> Utilisation des variables d'environnement pour la connexion <===============================
 //const db = monk(`mongodb://${process.env.DB_USER}:${process.env.DB_PASSWORD}@${process.env.DB_HOST}:${process.env.DB_PORT}/${process.env.DB_NAME}`);
-const db = monk(`mongodb://${authPart}${process.env.DB_HOST}:${process.env.DB_PORT}/${process.env.DB_NAME}`);
+
+//Version cnx Mongo OK
+// const db = monk(`mongodb://${authPart}${process.env.DB_HOST}:${process.env.DB_PORT}/${process.env.DB_NAME}`);
+//Version cnx Mongo extnsion cnx Cloud Atlas
+//monk('mongodb+srv://ricohoho:aBgU4K9OvjZlxbJ4@ricofilm.qvkgeo4.mongodb.net/ricofilm?retryWrites=true&w=majority&appName=ricofilm');
+const dbURL=`${dbPrefixURL}${authPart}${process.env.DB_HOST}${dbPortURL}/${process.env.DB_NAME}${dbPostfixURL}`
+
+const db = monk(dbURL);
+console.log(`dbURL=${dbURL}`);
+
+
 //============================================================
 
 var indexRouter = require('./routes/index');
@@ -88,9 +112,10 @@ console.log("DB_PORT =", process.env.DB_PORT);
 console.log("DB_NAME =", process.env.DB_NAME);
 console.log("authPart =", authPart);
 
-
+mongodb://user:pass@localhost:27017/ricofilm?retryWrites=true&w=majority&appName=ricofilm
 dbm.mongoose
-  .connect(`mongodb://${authPart}${process.env.DB_HOST}:${process.env.DB_PORT}/${process.env.DB_NAME}`, {
+  //.connect(`mongodb://${authPart}${process.env.DB_HOST}:${process.env.DB_PORT}/${process.env.DB_NAME}`, {
+  .connect(`${dbURL}`, {
     useNewUrlParser: true,
     useUnifiedTopology: true
   })
