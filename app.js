@@ -80,7 +80,7 @@ const URL_CORS_ACCEPT = process.env.URL_CORS_ACCEPT
 app.use(
   cors({
     credentials: true,
-    origin: `{$URL_CORS_ACCEPT}`, // 'http://localhost:4200' ou autre URL autorisée
+    origin: `${URL_CORS_ACCEPT}`, // 'http://localhost:4200' ou autre URL autorisée
     optionSuccessStatus: 200
   })
 );
