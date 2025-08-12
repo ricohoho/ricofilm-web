@@ -70,7 +70,7 @@ exports.signin = (req, res) => {
     return res.status(400).send({ message: "Username and password are required!" });
   }
   console.log(`signin username=${req.body.username} password=${req.body.password}`);
-  
+
   User.findOne({
     username: req.body.username,
   })
@@ -115,6 +115,7 @@ exports.signin = (req, res) => {
         username: user.username,
         email: user.email,
         roles: authorities,
+        token: token,
       });
     });
 };

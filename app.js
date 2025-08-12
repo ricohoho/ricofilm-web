@@ -115,7 +115,7 @@ console.log("DB_PORT =", process.env.DB_PORT);
 console.log("DB_NAME =", process.env.DB_NAME);
 console.log("authPart =", authPart);
 
-mongodb://user:pass@localhost:27017/ricofilm?retryWrites=true&w=majority&appName=ricofilm
+//mongodb://user:pass@localhost:27017/ricofilm?retryWrites=true&w=majority&appName=ricofilm
 dbm.mongoose
   //.connect(`mongodb://${authPart}${process.env.DB_HOST}:${process.env.DB_PORT}/${process.env.DB_NAME}`, {
   .connect(`${dbURL}`, {
