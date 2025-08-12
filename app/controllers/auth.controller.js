@@ -66,6 +66,11 @@ exports.signup = (req, res) => {
 };
 
 exports.signin = (req, res) => {
+  if (!req.body.username || !req.body.password) {
+    return res.status(400).send({ message: "Username and password are required!" });
+  }
+  console.log(`signin username=${req.body.username} password=${req.body.password}`);
+  
   User.findOne({
     username: req.body.username,
   })
