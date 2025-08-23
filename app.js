@@ -76,6 +76,7 @@ var app = express();
 
 //permet d'empecher les probleem cors, soit  : 
 //=> autoriser une application angular dispo en localhost:4200 de se connecter sur une app node sur le port 3000
+/*
 const URL_CORS_ACCEPT = process.env.URL_CORS_ACCEPT 
 console.log(`URL_CORS_ACCEPT=${URL_CORS_ACCEPT}`); 
 
@@ -84,6 +85,26 @@ app.use(
     credentials: true,
     origin: `${URL_CORS_ACCEPT}`, // 'http://localhost:4200' ou autre URL autorisée
     optionSuccessStatus: 200
+  })
+);
+*/
+//Nouvelle version avec plusieurs URL possibles
+const URL_CORS_ACCEPT = process.env.URL_CORS_ACCEPT?.split(",") || [];
+
+app.use(
+  cors({
+    credentials: true,
+    origin: function (origin, callback) {
+      // Si pas d'origine (ex: Postman) => autoriser
+      if (!origin) return callback(null, true);
+
+      if (URL_CORS_ACCEPT.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
+    optionsSuccessStatus: 200
   })
 );
 
