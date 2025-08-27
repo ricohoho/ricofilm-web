@@ -70,7 +70,6 @@ var usersRouter = require('./routes/users');
 var filmsRouter = require('./routes/films');
 var resquestRouter = require('./routes/request');
 var imageRouter = require('./routes/image');
-var syncRouter = require('./app/routes/sync.routes');
 
  
 var app = express();
@@ -169,7 +168,6 @@ app.use('/users', usersRouter);
 app.use('/films', filmsRouter);
 app.use('/request', resquestRouter);
 app.use('/image', imageRouter);
-app.use('/api/sync', syncRouter);
 
 
 app.use('/ricofilm/', indexRouter);
@@ -183,6 +181,7 @@ require("./app/routes/auth.routes")(app);
 require("./app/routes/user.routes")(app);
 require("./app/routes/request.routes")(app);
 require("./app/routes/mail.routes")(app);
+require("./app/routes/sync.routes")(app);
  
 // =========== Option Cors ==========
 /*
