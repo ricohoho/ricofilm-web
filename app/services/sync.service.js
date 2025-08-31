@@ -34,40 +34,32 @@ const syncFilms = async (localDb) => {
     const localFilms = localDb.get('films');
     const remoteFilms = remoteDb.get('films');
 
-    // 1. Trouver la date de mise à jour la plus récente dans la base de données locale,
-    // en considérant UPDATE_DB_DATE et RICO_FICHIER.insertDate
+    console.log("Début de la synchronisation des films...");
+
+    // =================================================================================
+    // PASSE 1 : Synchronisation rapide basée sur les dates
+    // Récupère les films nouveaux ou modifiés (selon les dates)
+    // =================================================================================
+    console.log("--- Passe 1 : Synchronisation rapide des ajouts/modifications ---");
     const lastUpdateResult = await localFilms.aggregate([
-        {
-            $project: {
-                latestDate: {
-                    $max: [
-                        "$UPDATE_DB_DATE",
-                        { $max: "$RICO_FICHIER.insertDate" }
-                    ]
-                }
-            }
-        },
+        { $project: { latestDate: { $max: ["$UPDATE_DB_DATE", { $max: "$RICO_FICHIER.insertDate" }] } } },
         { $sort: { latestDate: -1 } },
         { $limit: 1 }
     ]);
+    const lastUpdateDate = lastUpdateResult.length > 0 && lastUpdateResult[0].latestDate ? lastUpdateResult[0].latestDate : new Date(0);
+    console.log(`Dernière date de mise à jour locale trouvée : ${lastUpdateDate}`);
 
-    const lastUpdateDate = lastUpdateResult.length > 0 ? lastUpdateResult[0].latestDate : new Date(0);
-    console.log(`Dernière date de mise à jour locale (max de UPDATE_DB_DATE et RICO_FICHIER.insertDate) : ${lastUpdateDate}`);
-
-
-    // 2. Récupérer les films de la base de données distante mis à jour après cette date
     const filmsToSync = await remoteFilms.find({
         $or: [
             { UPDATE_DB_DATE: { $gt: lastUpdateDate } },
             { "RICO_FICHIER.insertDate": { $gt: lastUpdateDate } }
         ]
     });
-    console.log(`${filmsToSync.length} film(s) à synchroniser.`);
+    console.log(`${filmsToSync.length} film(s) à créer ou mettre à jour trouvés par la passe rapide.`);
 
     let createdCount = 0;
     let updatedCount = 0;
 
-    // 3. Mettre à jour ou insérer les films dans la base de données locale
     for (const film of filmsToSync) {
         const existingFilm = await localFilms.findOne({ id: film.id });
         if (existingFilm) {
@@ -78,13 +70,75 @@ const syncFilms = async (localDb) => {
             createdCount++;
         }
     }
+    console.log(`Passe 1 terminée : ${createdCount} créé(s), ${updatedCount} mis à jour.`);
 
-    console.log(`Synchronisation terminée : ${createdCount} film(s) créé(s), ${updatedCount} film(s) mis à jour.`);
+    // =================================================================================
+    // PASSE 2 : Vérification complète pour les suppressions et les modifications silencieuses
+    // Cette passe est plus lente mais garantit une synchronisation parfaite.
+    // =================================================================================
+    console.log("\n--- Passe 2 : Vérification complète des suppressions et modifications silencieuses ---");
+
+    // --- 2a. Gestion des suppressions de documents ---
+    const remoteIds = (await remoteFilms.find({}, { projection: { id: 1 } })).map(f => f.id);
+    const localIds = (await localFilms.find({}, { projection: { id: 1 } })).map(f => f.id);
+    const remoteIdsSet = new Set(remoteIds);
+    const idsToDelete = localIds.filter(id => !remoteIdsSet.has(id));
+
+    let deletedCount = 0;
+    if (idsToDelete.length > 0) {
+        console.log(`Détection de ${idsToDelete.length} film(s) à supprimer...`);
+        const result = await localFilms.remove({ id: { $in: idsToDelete } });
+        deletedCount = result.deletedCount || idsToDelete.length; // Fallback pour compatibilité
+        console.log(`${deletedCount} film(s) supprimé(s) de la base locale.`);
+    } else {
+        console.log("Aucun film à supprimer.");
+    }
+
+    // --- 2b. Gestion des modifications silencieuses dans RICO_FICHIER ---
+    const idsToCheck = localIds.filter(id => remoteIdsSet.has(id));
+    const remoteCounts = await remoteFilms.aggregate([
+        { $match: { id: { $in: idsToCheck } } },
+        { $project: { id: 1, count: { $size: { "$ifNull": ["$RICO_FICHIER", []] } } } }
+    ]);
+    const localCounts = await localFilms.aggregate([
+        { $match: { id: { $in: idsToCheck } } },
+        { $project: { id: 1, count: { $size: { "$ifNull": ["$RICO_FICHIER", []] } } } }
+    ]);
+
+    const remoteCountsMap = new Map(remoteCounts.map(item => [item.id, item.count]));
+    const localCountsMap = new Map(localCounts.map(item => [item.id, item.count]));
+    const idsToUpdateSilently = [];
+
+    for (const id of idsToCheck) {
+        if (remoteCountsMap.get(id) !== localCountsMap.get(id)) {
+            idsToUpdateSilently.push(id);
+        }
+    }
+
+    let silentUpdateCount = 0;
+    if (idsToUpdateSilently.length > 0) {
+        console.log(`Détection de ${idsToUpdateSilently.length} film(s) avec des modifications silencieuses dans RICO_FICHIER...`);
+        const filmsToUpdate = await remoteFilms.find({ id: { $in: idsToUpdateSilently } });
+        for (const film of filmsToUpdate) {
+            await localFilms.update({ id: film.id }, { $set: film });
+            silentUpdateCount++;
+        }
+        console.log(`${silentUpdateCount} film(s) mis à jour silencieusement.`);
+    } else {
+        console.log("Aucune modification silencieuse détectée.");
+    }
+
+    console.log("\n--- Résumé de la synchronisation ---");
+    console.log(`Créations (Passe 1) : ${createdCount}`);
+    console.log(`Mises à jour (Passe 1) : ${updatedCount}`);
+    console.log(`Suppressions (Passe 2) : ${deletedCount}`);
+    console.log(`Mises à jour silencieuses (Passe 2) : ${silentUpdateCount}`);
 
     return {
         created: createdCount,
         updated: updatedCount,
-        total: filmsToSync.length
+        deleted: deletedCount,
+        silent_updated: silentUpdateCount
     };
 };
 
