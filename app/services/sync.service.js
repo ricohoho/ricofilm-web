@@ -27,12 +27,16 @@ try {
 
 
 const syncFilms = async (localDb) => {
+    console.log("Démarrage de la synchronisation des films...");
     if (!remoteDb) {
         throw new Error("La connexion à la base de données distante n'est pas disponible.");
     }
 
+    console.log("Utilisation de la base de données distante :", remoteDbUrl);
     const localFilms = localDb.get('films');
+    console.log("Utilisation de la base de données locale.");
     const remoteFilms = remoteDb.get('films');
+
 
     console.log("Début de la synchronisation des films...");
 
@@ -41,6 +45,7 @@ const syncFilms = async (localDb) => {
     // Récupère les films nouveaux ou modifiés (selon les dates)
     // =================================================================================
     console.log("--- Passe 1 : Synchronisation rapide des ajouts/modifications ---");
+
     const lastUpdateResult = await localFilms.aggregate([
         { $project: { latestDate: { $max: ["$UPDATE_DB_DATE", { $max: "$RICO_FICHIER.insertDate" }] } } },
         { $sort: { latestDate: -1 } },
