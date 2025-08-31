@@ -27,15 +27,19 @@ try {
 
 
 const syncFilms = async (localDb) => {
+    console.log("Démarrage de la synchronisation des films...");
     if (!remoteDb) {
         throw new Error("La connexion à la base de données distante n'est pas disponible.");
     }
 
+    console.log("Utilisation de la base de données distante :", remoteDbUrl);
     const localFilms = localDb.get('films');
+    console.log("Utilisation de la base de données locale.");
     const remoteFilms = remoteDb.get('films');
 
     // 1. Trouver la date de mise à jour la plus récente dans la base de données locale,
     // en considérant UPDATE_DB_DATE et RICO_FICHIER.insertDate
+    console.log("Recherche de la dernière date de mise à jour locale...");
     const lastUpdateResult = await localFilms.aggregate([
         {
             $project: {
@@ -56,6 +60,7 @@ const syncFilms = async (localDb) => {
 
 
     // 2. Récupérer les films de la base de données distante mis à jour après cette date
+    console.log("Récupération des films mis à jour depuis la base de données distante...");
     const filmsToSync = await remoteFilms.find({
         $or: [
             { UPDATE_DB_DATE: { $gt: lastUpdateDate } },
@@ -68,6 +73,7 @@ const syncFilms = async (localDb) => {
     let updatedCount = 0;
 
     // 3. Mettre à jour ou insérer les films dans la base de données locale
+    console.log("Mise à jour ou insertion des films dans la base de données locale...");
     for (const film of filmsToSync) {
         const existingFilm = await localFilms.findOne({ id: film.id });
         if (existingFilm) {
