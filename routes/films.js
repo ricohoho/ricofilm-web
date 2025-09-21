@@ -207,7 +207,40 @@ if(!_sortsens) {
       try {
         
         var srequete = await callExternalServiceMistral( iaChoice,requestData);
-        // var objrequete= {};      
+  
+        if (iaChoice==RECHERCHE_IA2) {
+          /*le retour est sous la forme  : La réponse est un objet JSON: 
+          [
+              { imdb_id: 'tt12593682', title: 'Bullet Train' },
+              { imdb_id: 'tt2402702', title: 'The Lost City' },
+              { imdb_id: 'tt2935510', title: 'Ad Astra' },
+              { imdb_id: 'tt7131622', title: 'Once Upon a Time in Hollywood' },
+              { imdb_id: 'tt5463162', title: 'Deadpool 2' },
+              { imdb_id: 'tt2668864', title: 'War Machine' },
+              { imdb_id: 'tt0496424', title: 'Allied' },
+              { imdb_id: 'tt3774114', title: 'By the Sea' }
+            ] 
+          il faut le convertir en requete MongoDB, on garde les titres pour info: 
+                {
+                  imdb_id: {
+                    $in: [
+                      'tt12593682',
+                      'tt2402702',
+                      'tt2935510',
+                      'tt7131622',
+                      'tt5463162',
+                      'tt2668864',
+                      'tt0496424',
+                      'tt3774114'
+                    ]
+                  }
+                }
+            */
+
+            srequete = convertToMongoInQueryTitle(srequete);
+            console.log('srequete convertie="'+iaChoice+'"',srequete );    
+        }
+
         console.log('srequete=',srequete );
         // Vérifie si la réponse est déjà un objet JSON, en effet sur les requetes simple 
         // on a directment un json par exmple : { 'credits.cast.name': 'Aaron Taylor-Johnson' }
@@ -362,5 +395,23 @@ router.post('/add', function(req, res) {
 });
 
 
+// Convertit un tableau d'objets { imdb_id, title } en requête MongoDB { imdb_id: { $in: [...] } }
+function convertToMongoInQueryImdb(array) {
+  return {
+    imdb_id: {
+      $in: array.map(item => item.imdb_id)
+    }
+  };
+}
+
+// Convertit un tableau d'objets { imdb_id, title } en requête MongoDB { original_title: { $in: [...] } }
+function convertToMongoInQueryTitle(array) {
+  console.log('convertToMongoInQueryTitle array=',array );
+  return {
+    original_title: {
+      $in: array.map(item => item.title)
+    }
+  };
+}
 
 module.exports = router;
