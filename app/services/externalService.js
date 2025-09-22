@@ -30,8 +30,12 @@ const  callExternalServiceMistral = async (iaChoice,requestData) => {
     console.log(`IA_HOST=${IA_HOST}`);
     console.log(`IA_PORT=${IA_PORT}`);
     console.log(`IA_URL=${IA_URL}`);
+    
+    IA_URL_COMLETE=IA_PROTOCOL+`://${IA_HOST}:${IA_PORT}/${IA_URL}`;
+    console.log(`IA_URL_COMLETE=${IA_URL_COMLETE}`);
+    // Effectue la requête POST vers le service externe
 
-    const response = await axios.post(IA_PROTOCOL+`://${IA_HOST}:${IA_PORT}/${IA_URL}`,requestData); //172.17.0.3
+    const response = await axios.post(IA_URL_COMLETE,requestData); //172.17.0.3
     
     if (response.status === 200 && response.data) {
 
