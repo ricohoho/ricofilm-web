@@ -135,6 +135,7 @@ console.log("DB_HOST =", process.env.DB_HOST);
 console.log("DB_PORT =", process.env.DB_PORT);
 console.log("DB_NAME =", process.env.DB_NAME);
 console.log("IA_PORT =", process.env.IA_PORT);
+console.log("IA_PROTOCOL=",process.env.IA_PROTOCOL);
 console.log("IA_HOST =", process.env.IA_HOST);
 console.log("authPart =", authPart);
 

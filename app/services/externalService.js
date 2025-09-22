@@ -22,14 +22,16 @@ const  callExternalServiceMistral = async (iaChoice,requestData) => {
     const IA_HOST = process.env.IA_HOST;
     const IA_PORT = process.env.IA_PORT;
     var IA_URL = process.env.IA_URL;
+    var IA_PROTOCOL = process.env.IA_PROTOCOL || 'http';
     if (iaChoice===RECHERCHE_IA2){
       IA_URL = process.env.IA2_URL;
     } 
+    console.log(`IA_PROTOCOL=${IA_PROTOCOL}`);
     console.log(`IA_HOST=${IA_HOST}`);
     console.log(`IA_PORT=${IA_PORT}`);
     console.log(`IA_URL=${IA_URL}`);
 
-    const response = await axios.post(`http://${IA_HOST}:${IA_PORT}/${IA_URL}`,requestData); //172.17.0.3
+    const response = await axios.post(IA_PROTOCOL+`://${IA_HOST}:${IA_PORT}/${IA_URL}`,requestData); //172.17.0.3
     
     if (response.status === 200 && response.data) {
 
