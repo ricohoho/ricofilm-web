@@ -1,4 +1,5 @@
 const { authJwt } = require("../app/middlewares");
+const axios = require('axios');
 var express = require('express');
 var router = express.Router();
 const { getSQLMongo } = require('../app/controllers/film.controller');
@@ -299,17 +300,27 @@ if(!_sortsens) {
         _NbFilms=count;
       });
 
-      collection.find(objrequete,optionBD,function(e,docs){
+      collection.find(objrequete,optionBD,async function(e,docs){
         if (filmTitlesFromIA) {
+          //Tableau des titre : ["titre1","titre2"]
           const foundTitles = docs.map(doc => doc.original_title);
+          //Tableau des film present dans filmTitlesFromIA et pas présent dans  foundTitles
           const missingTitles = filmTitlesFromIA.filter(title => !foundTitles.includes(title));
-          const missingFilms = missingTitles.map(title => ({
-            original_title: title,
-            title: title,
-            status: 'not_found',
-            RICO_FICHIER:[]
-          }));
-          docs = docs.concat(missingFilms);
+          //Si il existe des film missing
+          if (missingTitles.length > 0) {
+            //Pour chaque film faire une recherche sur le film MovieDB en assychrone
+            const tmdbPromises = missingTitles.map(title => searchMovieOnTMDB(title));
+            //Attendre le retour pour chache recherche de film
+            const tmdbResults = await Promise.all(tmdbPromises);
+
+            const newFilms = tmdbResults.filter(film => film !== null).map(film => {
+              film.status = 'added_from_tmdb';
+              RICO_FICHIER:[];
+              return film;
+            });
+
+            docs = docs.concat(newFilms);
+          }
         }
         //Add header info
         res.append('NbFilms', _NbFilms);
@@ -424,6 +435,29 @@ function convertToMongoInQueryTitle(array) {
       $in: array.map(item => item.title)
     }
   };
+}
+
+// Search for a movie on TheMovieDB
+async function searchMovieOnTMDB(title) {
+  const url = `https://api.themoviedb.org/3/search/movie?query=${encodeURIComponent(title)}&include_adult=false&language=en-US&page=1`;
+  const options = {
+    method: 'GET',
+    headers: {
+      accept: 'application/json',
+      Authorization: `Bearer ${process.env.TMDB_API_BEARER_TOKEN}`
+    }
+  };
+
+  try {
+    const response = await axios.get(url, options);
+    if (response.data && response.data.results && response.data.results.length > 0) {
+      return response.data.results[0]; // Return the first, most likely result
+    }
+    return null; // No results found
+  } catch (error) {
+    console.error(`Error fetching movie "${title}" from TMDB:`, error);
+    return null;
+  }
 }
 
 module.exports = router;
