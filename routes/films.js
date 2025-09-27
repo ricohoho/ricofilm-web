@@ -302,15 +302,20 @@ if(!_sortsens) {
 
       collection.find(objrequete,optionBD,async function(e,docs){
         if (filmTitlesFromIA) {
+          //Tableau des titre : ["titre1","titre2"]
           const foundTitles = docs.map(doc => doc.original_title);
+          //Tableau des film present dans filmTitlesFromIA et pas présent dans  foundTitles
           const missingTitles = filmTitlesFromIA.filter(title => !foundTitles.includes(title));
-
+          //Si il existe des film missing
           if (missingTitles.length > 0) {
+            //Pour chaque film faire une recherche sur le film MovieDB en assychrone
             const tmdbPromises = missingTitles.map(title => searchMovieOnTMDB(title));
+            //Attendre le retour pour chache recherche de film
             const tmdbResults = await Promise.all(tmdbPromises);
 
             const newFilms = tmdbResults.filter(film => film !== null).map(film => {
               film.status = 'added_from_tmdb';
+              RICO_FICHIER:[];
               return film;
             });
 
