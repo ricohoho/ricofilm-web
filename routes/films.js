@@ -238,7 +238,8 @@ if(!_sortsens) {
                   }
                 }
             */
-            filmTitlesFromIA = srequete.map(item => item.title);
+            //filmTitlesFromIA = srequete.map(item => item.title);
+            filmTitlesFromIA = Array.from(new Set(srequete.map(item => item.title)));
             srequete = convertToMongoInQueryTitle(srequete);
             console.log('srequete convertie="'+iaChoice+'"',srequete );    
         }
