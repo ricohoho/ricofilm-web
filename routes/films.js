@@ -305,7 +305,9 @@ if(!_sortsens) {
           const missingTitles = filmTitlesFromIA.filter(title => !foundTitles.includes(title));
           const missingFilms = missingTitles.map(title => ({
             original_title: title,
-            status: 'not_found'
+            title: title,
+            status: 'not_found',
+            RICO_FICHIER:[]
           }));
           docs = docs.concat(missingFilms);
         }
