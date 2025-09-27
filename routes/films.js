@@ -304,8 +304,10 @@ if(!_sortsens) {
         if (filmTitlesFromIA) {
           //Tableau des titre : ["titre1","titre2"]
           const foundTitles = docs.map(doc => doc.original_title);
+          console.log('foundTitles(film BD)=',foundTitles );
           //Tableau des film present dans filmTitlesFromIA et pas présent dans  foundTitles
           const missingTitles = filmTitlesFromIA.filter(title => !foundTitles.includes(title));
+          console.log('missingTitles(à chercher sur TMDB)=',missingTitles );
           //Si il existe des film missing
           if (missingTitles.length > 0) {
             //Pour chaque film faire une recherche sur le film MovieDB en assychrone
