@@ -119,6 +119,7 @@ router.get('/list',  async function(req, res) {
   }
 
   var _NbFilms=0;
+  var filmTitlesFromIA = null;
 
   if(!_skip) {
     _skip=0;
@@ -236,7 +237,7 @@ if(!_sortsens) {
                   }
                 }
             */
-
+            filmTitlesFromIA = srequete.map(item => item.title);
             srequete = convertToMongoInQueryTitle(srequete);
             console.log('srequete convertie="'+iaChoice+'"',srequete );    
         }
@@ -299,6 +300,15 @@ if(!_sortsens) {
       });
 
       collection.find(objrequete,optionBD,function(e,docs){
+        if (filmTitlesFromIA) {
+          const foundTitles = docs.map(doc => doc.original_title);
+          const missingTitles = filmTitlesFromIA.filter(title => !foundTitles.includes(title));
+          const missingFilms = missingTitles.map(title => ({
+            original_title: title,
+            status: 'not_found'
+          }));
+          docs = docs.concat(missingFilms);
+        }
         //Add header info
         res.append('NbFilms', _NbFilms);
         res.json(docs);
