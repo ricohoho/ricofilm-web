@@ -315,7 +315,7 @@ if(!_sortsens) {
 
             const newFilms = tmdbResults.filter(film => film !== null).map(film => {
               film.status = 'added_from_tmdb';
-              RICO_FICHIER:[];
+              film.RICO_FICHIER=[];
               return film;
             });
 
@@ -439,6 +439,9 @@ function convertToMongoInQueryTitle(array) {
 
 // Search for a movie on TheMovieDB
 async function searchMovieOnTMDB(title) {
+  console.log(`Searching TMDB for movie: ${title}`);
+  // TMDB API endpoint for searching movies
+  // We use encodeURIComponent to handle special characters in the title
   const url = `https://api.themoviedb.org/3/search/movie?query=${encodeURIComponent(title)}&include_adult=false&language=en-US&page=1`;
   const options = {
     method: 'GET',
