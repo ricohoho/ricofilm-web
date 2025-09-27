@@ -60,7 +60,8 @@ const  callExternalServiceMistral = async (iaChoice,requestData) => {
     }    
   } catch (error) {
     console.error('Error calling external service:', error);
-    throw error;
+    //throw error;
+    return null;
   }
 };
 

@@ -210,7 +210,7 @@ if(!_sortsens) {
         
         var srequete = await callExternalServiceMistral( iaChoice,requestData);
   
-        if (iaChoice==RECHERCHE_IA2) {
+        if (iaChoice==RECHERCHE_IA2 && srequete!=null) {
           /*le retour est sous la forme  : La réponse est un objet JSON: 
           [
               { imdb_id: 'tt12593682', title: 'Bullet Train' },
@@ -247,10 +247,15 @@ if(!_sortsens) {
         console.log('srequete=',srequete );
         // Vérifie si la réponse est déjà un objet JSON, en effet sur les requetes simple 
         // on a directment un json par exmple : { 'credits.cast.name': 'Aaron Taylor-Johnson' }
-        if (typeof srequete === 'object') {
-          var objrequete = srequete;
-        } else {
+        if (srequete==null) {
+          var srequete='{}';
           var objrequete = JSON.parse(srequete);
+        } else {
+          if (typeof srequete === 'object') {
+            var objrequete = srequete;
+          } else {
+            var objrequete = JSON.parse(srequete);
+          }
         }
         
       } catch (error) {
