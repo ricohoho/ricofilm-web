@@ -2,11 +2,11 @@ const monk = require('monk');
 const sourceDb = monk('mongodb://ricoAdmin:rineka5993@davic.mkdh.fr:27017/ricofilm');
 //const targetDb = monk('mongodb://172.21.82.150:27017/ricofilm');
 //const targetDb = monk('mongodb://root:example@34.155.114.90:27017/ricofilm');
-//const targetDb = monk('mongodb://ricohoho:rico$2025@localhost:27017/ricofilm');
+const targetDb = monk('mongodb://ricohoho:rico$2025@localhost:27017/ricofilm');
 //Version cloud mongo
 //const targetDb = monk('mongodb+srv://ricohoho:aBgU4K9OvjZlxbJ4@ricofilm.qvkgeo4.mongodb.net/?retryWrites=true&w=majority&appName=ricofilm');
 // ...existing code...
-const targetDb = monk('mongodb+srv://ricohoho:aBgU4K9OvjZlxbJ4@ricofilm.qvkgeo4.mongodb.net/ricofilm?retryWrites=true&w=majority&appName=ricofilm');
+//const targetDb = monk('mongodb+srv://ricohoho:aBgU4K9OvjZlxbJ4@ricofilm.qvkgeo4.mongodb.net/ricofilm?retryWrites=true&w=majority&appName=ricofilm');
 // ...existing code...
 
 

@@ -66,9 +66,10 @@ const syncFilms = async (localDb) => {
     let updatedCount = 0;
 
     for (const film of filmsToSync) {
-        const existingFilm = await localFilms.findOne({ id: film.id });
+        console.log("film.id"+film.id+"/"+film.title);
+        const existingFilm = await localFilms.findOne({ _id: film._id });
         if (existingFilm) {
-            await localFilms.update({ id: film.id }, { $set: film });
+            await localFilms.update({ _id: film._id }, { $set: film });
             updatedCount++;
         } else {
             await localFilms.insert(film);

@@ -1,12 +1,39 @@
 "# ricofilm-web" 
 
-Lancement
+# Base de donnée 
+## Instalation de la base de donnée en docker 
+<pre>docker compose -f docker-compose.db.yml up</pre>
 
-<pre>npm run start:local</pre>
+Initialisaiton de la structure de la base de données
+<pre>docker start ricofilm-mongoc
+mongosh -u admin  -p password --authenticationDatabase admin
+	use ricofilm
+	db.createUser({
+  		user: "ricohoho",
+  		pwd: "rico$2025",
+  		roles: [{ role: "readWrite", db: "ricofilm" }]
+	})
+  exit
+  exit
+</pre>
+
+Initialisaiton des données de la base de données
+Commenter ou decommenter les lignes de BD et de collections
+<pre>
+  node app/services/copie-collection.js
+</pre>
+
+# Back-end
+## Lancement du backend
+
+<pre>npm run start</pre>
 
 ou 
 
 <pre>npm run start:cloud</pre>
+
+test 
+<pre>http://localhost:3000/</pre>
 
 
 configuratiion dans package.json
