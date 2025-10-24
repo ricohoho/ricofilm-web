@@ -96,8 +96,8 @@ const syncFilms = async (localDb) => {
     let deletedCount = 0;
     if (localIds.length!=0 & idsToDelete.length > 0) {
         console.log(`Détection de ${idsToDelete.length} film(s) à supprimer...`);
-        const result = await localFilms.remove({ _id: { $in: idsToDelete } });
-        deletedCount = result.deletedCount || idsToDelete.length; // Fallback pour compatibilité
+   //     const result = await localFilms.remove({ _id: { $in: idsToDelete } });
+   //     deletedCount = result.deletedCount || idsToDelete.length; // Fallback pour compatibilité
         console.log(`${deletedCount} film(s) supprimé(s) de la base locale.`);
     } else {
         console.log("Aucun film à supprimer.");
