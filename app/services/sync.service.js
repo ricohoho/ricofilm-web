@@ -86,12 +86,15 @@ const syncFilms = async (localDb) => {
 
     // --- 2a. Gestion des suppressions de documents ---
     const remoteIds = (await remoteFilms.find({}, { projection: { _id: 1 } })).map(f => f._id);
+    console.log(`Récupération des IDs des films distants : ${remoteIds.length} film(s) trouvés.`);
     const localIds = (await localFilms.find({}, { projection: { _id: 1 } })).map(f => f._id);
+    console.log(`Récupération des IDs des films locaux : ${localIds.length} film(s) trouvés.`);
     const remoteIdsSet = new Set(remoteIds);
     const idsToDelete = localIds.filter(_id => !remoteIdsSet.has(_id));
+    console.log(`Films locaux à vérifier pour suppression : ${idsToDelete.length} film(s) détecté(s).`);
 
     let deletedCount = 0;
-    if (idsToDelete.length > 0) {
+    if (localIds.length!=0 & idsToDelete.length > 0) {
         console.log(`Détection de ${idsToDelete.length} film(s) à supprimer...`);
         const result = await localFilms.remove({ _id: { $in: idsToDelete } });
         deletedCount = result.deletedCount || idsToDelete.length; // Fallback pour compatibilité
