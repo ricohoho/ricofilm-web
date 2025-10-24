@@ -85,9 +85,9 @@ const syncFilms = async (localDb) => {
     console.log("\n--- Passe 2 : Vérification complète des suppressions et modifications silencieuses ---");
 
     // --- 2a. Gestion des suppressions de documents ---
-    const remoteIds = (await remoteFilms.find({}, { projection: { _id: 1 } })).map(f => f._id);
+    const remoteIds = (await remoteFilms.find({}, { projection: { _id: 1 } })).map(f => f._id.toString());
     console.log(`Récupération des IDs des films distants : ${remoteIds.length} film(s) trouvés.`);
-    const localIds = (await localFilms.find({}, { projection: { _id: 1 } })).map(f => f._id);
+    const localIds = (await localFilms.find({}, { projection: { _id: 1 } })).map(f => f._id.toString());
     console.log(`Récupération des IDs des films locaux : ${localIds.length} film(s) trouvés.`);
     const remoteIdsSet = new Set(remoteIds);
     const idsToDelete = localIds.filter(_id => !remoteIdsSet.has(_id));
