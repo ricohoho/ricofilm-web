@@ -37,6 +37,15 @@ const syncFilms = async (localDb) => {
     console.log("Utilisation de la base de données locale.");
     const remoteFilms = remoteDb.get('films');
 
+    // VÉRIFICATION DE SÉCURITÉ : Empêcher la suppression de masse si la source distante est vide
+    const remoteCount = await remoteFilms.count();
+    const localCount = await localFilms.count();
+
+    if (remoteCount === 0 && localCount > 0) {
+        const errorMessage = "Synchronisation annulée : la collection distante est vide alors que la collection locale contient des données. Cela pourrait indiquer un problème avec la source de données distante.";
+        console.error(errorMessage);
+        throw new Error(errorMessage);
+    }
 
     console.log("Début de la synchronisation des films...");
 
@@ -85,19 +94,23 @@ const syncFilms = async (localDb) => {
     console.log("\n--- Passe 2 : Vérification complète des suppressions et modifications silencieuses ---");
 
     // --- 2a. Gestion des suppressions de documents ---
-    const remoteIds = (await remoteFilms.find({}, { projection: { _id: 1 } })).map(f => f._id.toString());
+    const remoteIdDocs = (await remoteFilms.find({}, { projection: { _id: 1 } }));
+    const remoteIds = remoteIdDocs.map(doc => doc._id.toString());
     console.log(`Récupération des IDs des films distants : ${remoteIds.length} film(s) trouvés.`);
-    const localIds = (await localFilms.find({}, { projection: { _id: 1 } })).map(f => f._id.toString());
+    const localIdDocs = (await localFilms.find({}, { projection: { _id: 1 } }));
+    const localIds = localIdDocs.map(doc => doc._id.toString());
     console.log(`Récupération des IDs des films locaux : ${localIds.length} film(s) trouvés.`);
     const remoteIdsSet = new Set(remoteIds);
-    const idsToDelete = localIds.filter(_id => !remoteIdsSet.has(_id));
+    const idsToDelete = localIdDocs
+        .filter(doc => !remoteIdsSet.has(doc._id.toString()))
+        .map(doc => doc._id);
     console.log(`Films locaux à vérifier pour suppression : ${idsToDelete.length} film(s) détecté(s).`);
 
     let deletedCount = 0;
-    if (localIds.length!=0 & idsToDelete.length > 0) {
+    if (idsToDelete.length > 0) {
         console.log(`Détection de ${idsToDelete.length} film(s) à supprimer...`);
-   //     const result = await localFilms.remove({ _id: { $in: idsToDelete } });
-   //     deletedCount = result.deletedCount || idsToDelete.length; // Fallback pour compatibilité
+        const result = await localFilms.remove({ _id: { $in: idsToDelete } });
+        deletedCount = result.deletedCount || idsToDelete.length; // Fallback pour compatibilité
         console.log(`${deletedCount} film(s) supprimé(s) de la base locale.`);
     } else {
         console.log("Aucun film à supprimer.");
@@ -105,17 +118,19 @@ const syncFilms = async (localDb) => {
 
     // --- 2b. Gestion des modifications silencieuses dans RICO_FICHIER ---
     const idsToCheck = localIds.filter(id => remoteIdsSet.has(id));
+    const idsToCheckAsObjectIds = idsToCheck.map(id => monk.id(id));
+
     const remoteCounts = await remoteFilms.aggregate([
-        { $match: { _id: { $in: idsToCheck } } },
+        { $match: { _id: { $in: idsToCheckAsObjectIds } } },
         { $project: { _id: 1, count: { $size: { "$ifNull": ["$RICO_FICHIER", []] } } } }
     ]);
     const localCounts = await localFilms.aggregate([
-        { $match: { _id: { $in: idsToCheck } } },
+        { $match: { _id: { $in: idsToCheckAsObjectIds } } },
         { $project: { _id: 1, count: { $size: { "$ifNull": ["$RICO_FICHIER", []] } } } }
     ]);
 
-    const remoteCountsMap = new Map(remoteCounts.map(item => [item._id, item.count]));
-    const localCountsMap = new Map(localCounts.map(item => [item._id, item.count]));
+    const remoteCountsMap = new Map(remoteCounts.map(item => [item._id.toString(), item.count]));
+    const localCountsMap = new Map(localCounts.map(item => [item._id.toString(), item.count]));
     const idsToUpdateSilently = [];
 
     for (const _id of idsToCheck) {
@@ -127,7 +142,8 @@ const syncFilms = async (localDb) => {
     let silentUpdateCount = 0;
     if (idsToUpdateSilently.length > 0) {
         console.log(`Détection de ${idsToUpdateSilently.length} film(s) avec des modifications silencieuses dans RICO_FICHIER...`);
-        const filmsToUpdate = await remoteFilms.find({ _id: { $in: idsToUpdateSilently } });
+        const idsToUpdateAsObjectIds = idsToUpdateSilently.map(id => monk.id(id));
+        const filmsToUpdate = await remoteFilms.find({ _id: { $in: idsToUpdateAsObjectIds } });
         for (const film of filmsToUpdate) {
             await localFilms.update({ _id: film._id }, { $set: film });
             silentUpdateCount++;
