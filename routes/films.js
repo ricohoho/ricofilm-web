@@ -467,7 +467,7 @@ async function searchMovieOnTMDB(title) {
 
       //il faudrait retouner le detail du film plutot que le resultat de la recherche
       const filmId = response.data.results[0].id;
-      const sURLDetailImdb = "https://api.themoviedb.org/3/movie/"+filmId+"?api_key=bd5b73151b4a5a2ac5b34aca8bfe555a&language=fr-FR&append_to_response=credits,videos";
+      const sURLDetailImdb = `https://api.themoviedb.org/3/movie/${filmId}?api_key=${process.env.TMDB_API_KEY}&language=fr-FR&append_to_response=credits,videos`;
       console.log(`Fetching TMDB details for movie ID: ${filmId} from URL: ${sURLDetailImdb}`);
       const detailResponse = await axios.get(sURLDetailImdb);
       if (detailResponse.data) {
