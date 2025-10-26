@@ -10,7 +10,7 @@ mongosh -u admin  -p password --authenticationDatabase admin
 	use ricofilm
 	db.createUser({
   		user: "ricohoho",
-  		pwd: "rico$2025",
+  		pwd: "xxxxx",
   		roles: [{ role: "readWrite", db: "ricofilm" }]
 	})
   exit
