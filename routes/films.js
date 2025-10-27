@@ -307,6 +307,7 @@ if(!_sortsens) {
       });
 
       collection.find(objrequete,optionBD,async function(e,docs){
+        //traitment spcifique à la recherche IA : on complete avec les film manquant de la base de donnée
         if (filmTitlesFromIA) {
           //Tableau des titre : ["titre1","titre2"]
           const foundTitles = docs.map(doc => doc.original_title);
@@ -322,6 +323,7 @@ if(!_sortsens) {
             const tmdbResults = await Promise.all(tmdbPromises);
 
             const newFilms = tmdbResults.filter(film => film !== null).map(film => {
+              film._id = film.id;
               film.status = 'added_from_tmdb';
               film.RICO_FICHIER=[];
               return film;
@@ -462,7 +464,18 @@ async function searchMovieOnTMDB(title) {
   try {
     const response = await axios.get(url, options);
     if (response.data && response.data.results && response.data.results.length > 0) {
-      return response.data.results[0]; // Return the first, most likely result
+
+      //il faudrait retouner le detail du film plutot que le resultat de la recherche
+      const filmId = response.data.results[0].id;
+      const sURLDetailImdb = `https://api.themoviedb.org/3/movie/${filmId}?api_key=${process.env.TMDB_API_KEY}&language=fr-FR&append_to_response=credits,videos`;
+      console.log(`Fetching TMDB details for movie ID: ${filmId} from URL: ${sURLDetailImdb}`);
+      const detailResponse = await axios.get(sURLDetailImdb);
+      if (detailResponse.data) {
+        return detailResponse.data; // Return detailed movie info
+      } else {
+        return null; // No detailed data found
+      }
+      //return response.data.results[0]; // Return the first, most likely result
     }
     return null; // No results found
   } catch (error) {
