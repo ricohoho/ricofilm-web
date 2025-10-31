@@ -75,7 +75,18 @@ router.get('/listselect', [authJwt.verifyToken], function(req, res) {
   var _sortsens='1';
   //PAs de filtre
   var srequete='{}';
-  var objrequete = JSON.parse(srequete);
+
+  //2025/10/31 : Assouplissement de la requete : on cherche dans title et original_title
+  //var objrequete = JSON.parse(srequete);
+  var objrequete = {};
+  if (_filmname && _filmname.trim() !== "") {
+    objrequete = {
+      $or: [
+        { original_title: { $regex: _filmname, $options: "i" } },
+        { title: { $regex: _filmname, $options: "i" } }
+      ]
+    };
+  }
 
   const projection={original_title:1};
 
