@@ -64,7 +64,8 @@ router.get('/listmenufilmimage',  function(req, res) {
 });
 
 /* GET list film */
-/* liste rapide utilisé pour la liste de selecion de recherche */
+/* liste rapide utilisée dans la reherche locale angular apres chauqe frappe de lettre
+Cette endpoint rammene tout les film en local avec juste l'id et le title et l'originale_title*/
 router.get('/listselect', [authJwt.verifyToken], function(req, res) {
   var db = req.db;
   var collection = db.get('films');
@@ -77,6 +78,7 @@ router.get('/listselect', [authJwt.verifyToken], function(req, res) {
   var srequete='{}';
 
   //2025/10/31 : Assouplissement de la requete : on cherche dans title et original_title
+  //Attention on n'envoi plus de _filmname car on fait une recherche en local et totale depuis angular
   //var objrequete = JSON.parse(srequete);
   var objrequete = {};
   if (_filmname && _filmname.trim() !== "") {
@@ -91,7 +93,7 @@ router.get('/listselect', [authJwt.verifyToken], function(req, res) {
   const projection={original_title:1};
 
   optionBDString ='{' +          
-            '"projection":{ "id": 1,"original_title":1},'+
+            '"projection":{ "id": 1,"original_title":1,"title":1},'+
             '"limit": '+_limit+','+
             '"skip":'+ _skip+',' +
             '"sort":{"'+_sort+'":'+_sortsens+'}'+
@@ -153,12 +155,6 @@ if(!_sortsens) {
   sortComplet = "['"+_sort+"','"+_sortsens+"']";
   sortComplet = '{ "sort" : [{"'+_sort+'":'+_sortsens+'}]}';
   console.log('skip/sortComplet='+_skip+'/'+sortComplet);
-
-  //sortComplet = JSON.parse(sortComplet); 
-  //console.log('sortComplet.sort[0].original_title:'+sortComplet.sort[0].original_title);
-  //"sort" : {"original_title":1}
-
-
   
 
   console.log('requete _filmname: '+_filmname );
