@@ -107,6 +107,8 @@ router.get('/listselect', [authJwt.verifyToken], function(req, res) {
   });
 });
 
+
+
 /* GET list film */
 //router.get('/list', [authJwt.verifyToken], async function(req, res) {
 router.get('/list',  async function(req, res) {
@@ -141,16 +143,13 @@ router.get('/list',  async function(req, res) {
     _skip=parseInt(_skip, 10);
   }
 
-
   if(!_sort) {
-    //_sort='[original_title,asc]';
     _sort='original_title';
   }
   
 if(!_sortsens) {
-//    _sortsens='asc';
     _sortsens='1';
-  }
+}
   
   sortComplet = "['"+_sort+"','"+_sortsens+"']";
   sortComplet = '{ "sort" : [{"'+_sort+'":'+_sortsens+'}]}';
@@ -158,13 +157,12 @@ if(!_sortsens) {
   
 
   console.log('requete _filmname: '+_filmname );
+  //1 - Gestion de la recherche centraliséé et via IA
   if(_filmname) {
-    console.log('Filtre');
-    //var srequete='{"original_title":"'+_filmname+'"}';
-    //var objrequete = JSON.parse(srequete);
-    //    var objrequete = {original_title: new RegExp('(?=.*' + _filmname+')')};
+    console.log('1 / Filtre avec recherche filmname: '+_filmname );
     //============ infos===============
     //  https://stackoverflow.com/questions/8246019/case-insensitive-search-in-mongo
+    //=================================
     console.log('requete index: '+_filmname.indexOf(RECHERCHE_ACTEUR) +'-'+RECHERCHE_ACTEUR.length);
     if (_filmname.indexOf(RECHERCHE_ACTEUR)==0) {
       _filmname=_filmname.substring(_filmname.indexOf(RECHERCHE_ACTEUR)+RECHERCHE_ACTEUR.length);
@@ -273,6 +271,8 @@ if(!_sortsens) {
       }
       console.log('requete IA: '+objrequete );
     } else {
+      //Recherche Centralisée : titre / acteur / realisateur
+      console.log('requete [centralisée] sans indication de recherche: '+_filmname )
       var objrequete = { $or: [
                         {original_title:{'$regex' : _filmname, '$options' : 'i'}},
                         {title:{'$regex' : _filmname, '$options' : 'i'}},
@@ -282,17 +282,59 @@ if(!_sortsens) {
     }
 
   } else  {
-    var srequete='{}';
-    var objrequete = JSON.parse(srequete);
+    //2 - Gestion de la recherche detaillée
+    console.log('2 / Filtre avec recherche filtre detaillée: ' );
+    console.dir(req.query, { depth: null, colors: true });
+    const { title, original_title, actor, director, release_year, status } = req.query;
+    var objrequete = {};
+    console.log('1title='+title);
+    // Titre partiel
+    if (title) {
+      console.log('2title='+title);
+      //objrequete.title = { '$regex': new RegExp(title, 'i') };
+      objrequete.title = { '$regex': title,  '$options' : 'i'}
+      /*
+      objrequete = { $or: [
+                        {original_title:{'$regex' : title, '$options' : 'i'}},
+                        {title:{'$regex' : title, '$options' : 'i'}}
+                     ]};
+      */
+    }
+
+    if (original_title) {
+      objrequete.original_title = { $regex: new RegExp(original_title, 'i') };
+    }
+
+    // Acteur
+    if (actor) {
+      objrequete['credits.cast.name'] = { $regex: new RegExp(actor, 'i') };
+    }
+
+    // Réalisateur
+    if (director) {
+      objrequete['credits.crew'] = {
+        $elemMatch: {
+          job: { $regex: /Director/i },
+          name: { $regex: new RegExp(director, 'i') }
+        }
+      };
+    }
+
+    // Année
+    if (release_year) {
+      objrequete.release_date = {
+        $gte: new Date(`${release_year}-01-01`),
+        $lt: new Date(`${Number(release_year) + 1}-01-01`)
+      };
+    }
+
+    // Statut
+    if (status) {
+      objrequete.status = status;
+    }
+
   }
-  /*Exemple de requete mongoDB
-  //var optionBD={collation:{locale:'en',strength:2}};
-  Paging
-  {
-  "limit": 20,
-  "skip": 10
-  }
-  */
+ 
   console.log('sortComplet'+sortComplet);
 
   optionBDString ='{' +
@@ -303,7 +345,7 @@ if(!_sortsens) {
   console.log('optionBD:'+optionBDString);
   optionBD = JSON.parse(optionBDString);
 
-  
+  console.log('info count='+_infocount);
 
   if(! _infocount) {
 
@@ -418,7 +460,7 @@ if(!_sortsens) {
   });
 
 
-  /* POST to adduser. */
+  /* POST to add film. */
 router.post('/add', function(req, res) {
   console.log('addFilm: debut' );
   var db = req.db;
