@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const axios = require('axios'); // Nécessite l'installation d'axios ou d'un autre client HTTP
+const axios = require('axios'); // Nécessite l'installation d'axios ou d'un autre client HTTP 
 
 // Vos constantes Emby (stockées idéalement dans des variables d'environnement)
 const EMBY_HOST = process.env.EMBY_HOST;
