@@ -70,6 +70,7 @@ var usersRouter = require('./routes/users');
 var filmsRouter = require('./routes/films');
 var resquestRouter = require('./routes/request');
 var imageRouter = require('./routes/image');
+var embyRouter = require('./routes/emby');
 
  
 var app = express();
@@ -178,6 +179,7 @@ app.use('/ricofilm/users', usersRouter);
 app.use('/ricofilm/films', filmsRouter);
 app.use('/ricofilm/request', resquestRouter);
 app.use('/ricofilm/image', imageRouter);
+app.use('/ricofilm/emby', embyRouter);
 
 // routes Authentification
 require("./app/routes/auth.routes")(app);
