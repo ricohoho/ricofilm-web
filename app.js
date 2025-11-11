@@ -6,7 +6,7 @@ var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 
 //== Ajour de l'authentificaiton avec JWT + Mango + Express
-//https://www.bezkoder.com/node-js-express-login-mongodb/
+//https://www.bezkoder.com/node-js-express-login-mongodb/ 
 //EF 20231028 authent
 const cors = require("cors");
 const cookieSession = require("cookie-session");
