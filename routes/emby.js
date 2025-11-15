@@ -5,56 +5,7 @@ const axios = require('axios'); // Nécessite l'installation d'axios ou d'un aut
 // Vos constantes Emby (stockées idéalement dans des variables d'environnement)
 const EMBY_HOST = process.env.EMBY_HOST;
 const EMBY_API_KEY = process.env.EMBY_API_KEY; // Votre clé API
-/*
-// Endpoint sécurisé pour le téléchargement
-// version initiale avec deux requêtes (obsolète)
-router.get('/download/:itemId/:filename', async (req, res) => {
-    const { itemId, filename } = req.params;
 
-    // 1. Construire l'URL de téléchargement Emby (avec l'API Key)
-    //https://davic.mkdh.fr:63196/Items/70997/Download?api_key=14ea069fc173437ba1cdc79ba1fcfe55
-    const embyDownloadUrl = `${EMBY_HOST}/Items/${itemId}/Download?api_key=${EMBY_API_KEY}`;
-    console.log(`Emby Download URL: ${embyDownloadUrl}`);
-    try {
-        // 2. Transmettre la requête d'Emby vers le client
-       const response = await axios.get(embyDownloadUrl, {
-            maxRedirects: 0, 
-            // NE PAS utiliser responseType: 'stream' ici
-            validateStatus: (status) => status === 302 || status === 200 // Accepter le code 302
-        });
-         console.log(`Emby responded with status: ${response.status}`);
-
-        // La première requête GET renvoie un code 302 (Redirection) avec l'URL réelle du fichier dans l'en-tête 'Location'.
-        const finalFileUrl = response.headers.location;
-        console.log(`Final File URL from Emby: ${finalFileUrl}`);
-        if (!finalFileUrl) {
-             // Si Emby ne renvoie pas 302 avec Location, il y a une erreur
-             console.error("Emby n'a pas renvoyé d'en-tête de redirection 'Location'.");
-             return res.status(500).send('Erreur: URL de fichier Emby introuvable.');
-        }
-
-        console.log(`Proxying file download for itemId=${itemId}, filename=${filename}`);
-        // 3. Récupérer le fichier réel en suivant l'URL de redirection
-       const fileResponse = await axios({
-            method: 'get',
-            url: finalFileUrl, // L'URL finale
-            responseType: 'stream', 
-        });
-
-        // 4. Définir les en-têtes pour le téléchargement côté client
-        res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
-        // Vous pouvez aussi définir Content-Type si vous le connaissez (e.g., 'video/x-matroska')
-        // res.setHeader('Content-Type', fileResponse.headers['content-type'] || 'application/octet-stream');
-
-        // 5. Transférer le flux binaire directement à l'utilisateur
-        fileResponse.data.pipe(res);
-
-    } catch (error) {
-        console.error('Erreur lors du proxy Emby:', error.message);
-        res.status(500).send('Erreur lors de la récupération du fichier Emby.');
-    }
-});
-*/
 
 //reccuperer l'id emby d'un film via son nom
 async function getEmbyItemIdByName(FilmName, options = {}) {
