@@ -139,6 +139,9 @@ console.log("IA_PORT =", process.env.IA_PORT);
 console.log("IA_PROTOCOL=",process.env.IA_PROTOCOL);
 console.log("IA_HOST =", process.env.IA_HOST);
 console.log("authPart =", authPart);
+console.log("EMBY_HOST =", process.env.EMBY_HOST);
+console.log("EMBY_API_KEY =", process.env.EMBY_API_KEY);
+
 
 //mongodb://user:pass@localhost:27017/ricofilm?retryWrites=true&w=majority&appName=ricofilm
 dbm.mongoose
@@ -172,6 +175,7 @@ app.use('/users', usersRouter);
 app.use('/films', filmsRouter);
 app.use('/request', resquestRouter);
 app.use('/image', imageRouter);
+app.use('/emby', embyRouter);
 
 
 app.use('/ricofilm/', indexRouter);
