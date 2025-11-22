@@ -28,4 +28,36 @@ module.exports = function (app) {
     controller.testMail
   );
 
+  /**
+   * @swagger
+   * /api/mail/send:
+   *   post:
+   *     summary: Send an email
+   *     tags: [Mail]
+   *     requestBody:
+   *       required: true
+   *       content:
+   *         application/json:
+   *           schema:
+   *             type: object
+   *             properties:
+   *               to:
+   *                 type: string
+   *                 description: Recipient email address
+   *               subject:
+   *                 type: string
+   *                 description: Email subject
+   *               text:
+   *                 type: string
+   *                 description: Plain text content
+   *               html:
+   *                 type: string
+   *                 description: HTML content (optional)
+   *     responses:
+   *       200:
+   *         description: Email sent successfully
+   *       400:
+   *         description: Bad request
+   */
+  app.post("/api/mail/send", controller.sendMail);
 };

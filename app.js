@@ -75,20 +75,6 @@ var embyRouter = require('./routes/emby');
 
 var app = express();
 
-//permet d'empecher les probleem cors, soit  : 
-//=> autoriser une application angular dispo en localhost:4200 de se connecter sur une app node sur le port 3000
-/*
-const URL_CORS_ACCEPT = process.env.URL_CORS_ACCEPT 
-console.log(`URL_CORS_ACCEPT=${URL_CORS_ACCEPT}`); 
-
-app.use(
-  cors({
-    credentials: true,
-    origin: `${URL_CORS_ACCEPT}`, // 'http://localhost:4200' ou autre URL autorisée
-    optionSuccessStatus: 200
-  })
-);
-*/
 //Nouvelle version avec plusieurs URL possibles
 const URL_CORS_ACCEPT = process.env.URL_CORS_ACCEPT?.split(",") || [];
 
@@ -99,9 +85,11 @@ app.use(
       // Si pas d'origine (ex: Postman) => autoriser
       if (!origin) return callback(null, true);
 
-      if (URL_CORS_ACCEPT.includes(origin)) {
+      const allowedOrigins = [...URL_CORS_ACCEPT, "http://localhost:3000", "http://127.0.0.1:3000"];
+      if (allowedOrigins.includes(origin)) {
         callback(null, true);
       } else {
+        console.error("CORS blocked origin:", origin);
         callback(new Error("Not allowed by CORS"));
       }
     },
