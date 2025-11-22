@@ -26,7 +26,9 @@
     "nodemailer": "^6.9.14",
     "primeflex": "^3.2.1",
     "pug": "^3.0.2",
-    "sharp": "^0.33.5"
+    "sharp": "^0.33.5",
+    "swagger-jsdoc": "^6.2.8",
+    "swagger-ui-express": "^5.0.1"
   },
   "devDependencies": {
     "dotenv-cli": "^10.0.0"

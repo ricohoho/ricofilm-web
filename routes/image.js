@@ -4,15 +4,53 @@ const axios = require('axios');
 var router = express.Router();
 
 /* GET users listing. */
-router.get('/', function(req, res, next) {
-  //res.send('respond with a resource');
-  //RICO : request est le nom du tempate .jade !
-  res.render('request', { title: 'RicoFilm' });
+router.get('/', function (req, res, next) {
+    //res.send('respond with a resource');
+    //RICO : request est le nom du tempate .jade !
+    res.render('request', { title: 'RicoFilm' });
 });
 
 
 
 // Point d'entrée pour redimensionner l'image depuis une URL
+/**
+ * @swagger
+ * /image/resize:
+ *   get:
+ *     summary: Resize an image from a URL
+ *     tags: [Image]
+ *     parameters:
+ *       - in: query
+ *         name: url
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: URL of the image to resize
+ *       - in: query
+ *         name: width
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Target width
+ *       - in: query
+ *         name: height
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Target height
+ *     responses:
+ *       200:
+ *         description: Resized image
+ *         content:
+ *           image/jpeg:
+ *             schema:
+ *               type: string
+ *               format: binary
+ *       400:
+ *         description: Missing parameters
+ *       500:
+ *         description: Error resizing image
+ */
 router.get('/resize', async (req, res) => {
     console.log('resize');
     try {

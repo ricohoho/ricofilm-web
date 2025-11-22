@@ -41,8 +41,33 @@ async function getEmbyItemIdByName(FilmName, options = {}) {
 }
 
 // Node.js (Route /download/emby/:itemId/:filename)
+/**
+ * @swagger
+ * /emby/download/{filmname}/{filename}:
+ *   get:
+ *     summary: Download a film from Emby
+ *     tags: [Emby]
+ *     parameters:
+ *       - in: path
+ *         name: filmname
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The name of the film
+ *       - in: path
+ *         name: filename
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The filename to save as
+ *     responses:
+ *       200:
+ *         description: File download stream
+ *       404:
+ *         description: Film not found
+ */
 router.get('/download/:filmname/:filename', async (req, res) => {
-    
+
     const { filmname, filename } = req.params;
     console.log("download request received");
     const EmbyId = await getEmbyItemIdByName(filmname);
@@ -53,24 +78,24 @@ router.get('/download/:filmname/:filename', async (req, res) => {
 
     // 1. URL Emby de téléchargement (celle qui renvoie le 302)
     const embyDownloadUrl = `${EMBY_HOST}/Items/${EmbyId}/Download?api_key=${EMBY_API_KEY}`;
-    
+
     try {
         // --- NOUVELLE APPROCHE : UN SEUL APPEL AXIOS ---
-        
+
         const fileResponse = await axios({
             method: 'get',
             url: embyDownloadUrl,
             responseType: 'stream', // Traiter la réponse comme un flux
             // 💡 CRITIQUE : Laisser Axios gérer la redirection (maxRedirects > 0, par défaut 5)
             // Cela économise une requête réseau pour la redirection.
-            maxRedirects: 5 
+            maxRedirects: 5
         });
 
         // 2. Transférer les En-têtes pour le téléchargement
-        
+
         // C'est critique pour indiquer le nom du fichier au navigateur
         res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
-        
+
         // Copier les en-têtes de streaming (Content-Type, Content-Length)
         // Ceci permet au navigateur de savoir la taille du fichier et son type.
         if (fileResponse.headers['content-type']) {
@@ -79,9 +104,9 @@ router.get('/download/:filmname/:filename', async (req, res) => {
         if (fileResponse.headers['content-length']) {
             res.setHeader('Content-Length', fileResponse.headers['content-length']);
         }
-        
+
         // 3. Établir le Piping Immédiatement
-        
+
         // Dès que le premier morceau de données arrive dans le flux d'Axios, il est
         // immédiatement envoyé à la réponse de l'utilisateur.
         fileResponse.data.pipe(res);
@@ -93,7 +118,7 @@ router.get('/download/:filmname/:filename', async (req, res) => {
             if (!res.headersSent) {
                 res.status(500).send('Erreur lors du transfert du fichier.');
             } else {
-                res.end(); 
+                res.end();
             }
         });
 
@@ -109,6 +134,27 @@ router.get('/download/:filmname/:filename', async (req, res) => {
 });
 
 // Apple TV et autres clients de streaming
+/**
+ * @swagger
+ * /emby/stream/{filmname}:
+ *   get:
+ *     summary: Stream a film from Emby
+ *     tags: [Emby]
+ *     parameters:
+ *       - in: path
+ *         name: filmname
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The name of the film
+ *     responses:
+ *       200:
+ *         description: Video stream
+ *       206:
+ *         description: Partial content (streaming)
+ *       404:
+ *         description: Film not found
+ */
 router.get('/stream/:filmname', async (req, res) => {
     // ... validation de l'utilisateur ici ...
     console.log("Streaming request received");
@@ -123,9 +169,9 @@ router.get('/stream/:filmname', async (req, res) => {
 
     const streamUrl = `${EMBY_HOST}/Videos/${EmbyId}/stream?static=true&api_key=${EMBY_API_KEY}`;
     console.log(`Stream URL: ${streamUrl}`);
-    
+
     // Si l'utilisateur a envoyé un Range header, transmettez-le à Emby
-    const rangeHeader = req.headers.range; 
+    const rangeHeader = req.headers.range;
     const headersToEmby = {};
     if (rangeHeader) {
         headersToEmby['Range'] = rangeHeader;

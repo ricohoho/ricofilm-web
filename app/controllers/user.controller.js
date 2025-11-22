@@ -1,6 +1,8 @@
 const db = require("../models");
 const User = db.user;
+const Roles = db.role;
 const UserDto = require('../models/user.dto');
+const RoleDto = require('../models/role.dto');
 const mongoose = require("mongoose");
 
 //========= Role ===================================//
@@ -123,6 +125,8 @@ exports.update = (req, res) => {
 
 };
 
+//========= Fonctions utilitaires ===================================//
+//Liste des roles d'un utilisateur
 roleList = (user) => {
 	console.log('---roleList');
 	console.log(user);	
@@ -133,7 +137,23 @@ roleList = (user) => {
         authorities.push("ROLE_" + user.roles[i].name);
       }
      return authorities;
-     
-     //return "X";
 }
 
+//Listes des roles disponibles
+exports.rolesList  = (req, res) => {  
+
+	Roles.find()
+    .exec((err, roles) => {
+	    if (err) {
+	      res.status(500).send({ message: err });
+	      return;
+	    }
+
+		console.log(roles);
+		console.log('---');
+  		const rolesDto = roles.map(role => new RoleDto(role._id,role.name));  
+  		res.status(200).send(rolesDto);
+		return;
+
+	});
+}
