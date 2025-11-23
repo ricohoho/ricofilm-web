@@ -206,7 +206,7 @@ require("./app/routes/mail.routes")(app);
 require("./app/routes/sync.routes")(app);
 
 // =========== Option Cors ==========
-/*
+/* 
 const cors = require('cors');
 var corsOptions = {
     origin: '*',//http://localhost:4200',

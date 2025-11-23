@@ -25,7 +25,7 @@ module.exports = function (app) {
   app.post(
     "/api/syncFilms",
     [authJwt.verifyToken],
-    controller.syncFilms
+    controller.syncFilmsController
   );
 
   /**
@@ -43,6 +43,6 @@ module.exports = function (app) {
   app.post(
     "/api/syncRequests",
     [authJwt.verifyToken],
-    controller.syncRequests
+    controller.syncRequestsController
   );
 };
