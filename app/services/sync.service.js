@@ -32,16 +32,19 @@ const syncFilms = async (localDb) => {
         throw new Error("La connexion à la base de données distante n'est pas disponible.");
     }
 
-    console.log("Utilisation de la base de données distante :", remoteDbUrl);
+    console.log("Utilisation de la base de données locale  :", remoteDbUrl);
     const localFilms = localDb.get('films');
-    console.log("Utilisation de la base de données locale.");
+    console.log("Utilisation de la base de données distante");
     const remoteFilms = remoteDb.get('films');
 
     // VÉRIFICATION DE SÉCURITÉ : Empêcher la suppression de masse si la source distante est vide
     const remoteCount = await remoteFilms.count();
+    console.log("Nombre de films distants :", remoteCount);
     const localCount = await localFilms.count();
+    console.log("Nombre de films locaux :", localCount);
 
     if (remoteCount === 0 && localCount > 0) {
+        console.log("Synchronisation annulée : la collection distante est vide alors que la collection locale contient des données. Cela pourrait indiquer un problème avec la source de données distante.");
         const errorMessage = "Synchronisation annulée : la collection distante est vide alors que la collection locale contient des données. Cela pourrait indiquer un problème avec la source de données distante.";
         console.error(errorMessage);
         throw new Error(errorMessage);
@@ -75,7 +78,7 @@ const syncFilms = async (localDb) => {
     let updatedCount = 0;
 
     for (const film of filmsToSync) {
-        console.log("film.id"+film.id+"/"+film.title);
+        console.log("film.id" + film.id + "/" + film.title);
         const existingFilm = await localFilms.findOne({ _id: film._id });
         if (existingFilm) {
             await localFilms.update({ _id: film._id }, { $set: film });
@@ -167,6 +170,40 @@ const syncFilms = async (localDb) => {
     };
 };
 
+const syncRequests = async (localDb) => {
+    console.log("Démarrage de la synchronisation des requests...");
+    if (!remoteDb) {
+        throw new Error("La connexion à la base de données distante n'est pas disponible.");
+    }
+
+    const localRequests = localDb.get('request');
+    const remoteRequests = remoteDb.get('request');
+
+    console.log("Récupération des données locales et distantes...");
+    const localDocs = await localRequests.find({});
+    const remoteIdDocs = await remoteRequests.find({}, { projection: { _id: 1 } });
+    const remoteIdsSet = new Set(remoteIdDocs.map(doc => doc._id.toString()));
+
+    console.log(`${localDocs.length} request(s) locale(s) trouvée(s).`);
+    console.log(`${remoteIdsSet.size} request(s) distante(s) trouvée(s).`);
+
+    let syncedCount = 0;
+    for (const doc of localDocs) {
+        if (!remoteIdsSet.has(doc._id.toString())) {
+            try {
+                await remoteRequests.insert(doc);
+                syncedCount++;
+            } catch (e) {
+                console.error(`Erreur lors de l'insertion de la request ${doc._id} :`, e);
+            }
+        }
+    }
+
+    console.log(`Synchronisation des requests terminée : ${syncedCount} document(s) ajouté(s) à la base distante.`);
+    return { synced: syncedCount };
+};
+
 module.exports = {
-    syncFilms
+    syncFilms,
+    syncRequests
 };

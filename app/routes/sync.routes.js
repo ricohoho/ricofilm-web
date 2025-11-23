@@ -12,19 +12,37 @@ module.exports = function (app) {
 
   /**
    * @swagger
-   * /api/sync:
+   * /api/syncFilms:
    *   post:
-   *     summary: Sync data
+   *     summary: Sync films
    *     tags: [Sync]
    *     responses:
    *       200:
-   *         description: Data synced successfully
+   *         description: Films synced successfully
    *       401:
    *         description: Unauthorized
    */
   app.post(
-    "/api/sync",
+    "/api/syncFilms",
     [authJwt.verifyToken],
-    controller.sync
+    controller.syncFilms
+  );
+
+  /**
+  * @swagger
+  * /api/syncRequests:
+  *   post:
+  *     summary: Sync requests
+  *     tags: [Sync]
+  *     responses:
+  *       200:
+  *         description: Requests synced successfully
+  *       401:
+  *         description: Unauthorized
+  */
+  app.post(
+    "/api/syncRequests",
+    [authJwt.verifyToken],
+    controller.syncRequests
   );
 };
