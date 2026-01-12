@@ -1,0 +1,45 @@
+
+name: Backend CI/CD
+
+on:
+  push:
+    branches:
+      - master
+    workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build Node.js
+        run: npm run build
+
+      - name: Build Docker image
+        run: docker build -t ghcr.io/ricohoho/ricofilm-back:latest -f Dockerfile .
+      - name: Push Docker image
+        run: |
+          echo "${{ secrets.LE_GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+          docker push ghcr.io/ricohoho/ricofilm-back:latest
+
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ vars.SERVER_IP }}
+          username: ${{ vars.SERVER_USER }}
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          port: 22
+          script: |
+            docker pull ghcr.io/votre-org/backend:latest
+            docker stop backend || true
+            docker rm backend || true
+            docker run -d --name backend -p 3000:3000 ghcr.io/ricohoho/ricofilm-back:latest
