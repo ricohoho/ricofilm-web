@@ -25,7 +25,7 @@ jobs:
         run: docker build -t ghcr.io/ricohoho/ricofilm-back:latest -f Dockerfile .
       - name: Push Docker image
         run: |
-          echo "${{ secrets.LE_GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+          echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
           docker push ghcr.io/ricohoho/ricofilm-back:latest
 
       - name: Deploy via SSH
@@ -36,7 +36,7 @@ jobs:
           key: ${{ secrets.SERVER_SSH_KEY }}
           port: 22
           script: |
-            docker pull ghcr.io/votre-org/backend:latest
+            docker pull ghcr.io/ricohoho/ricofilm-back:latest
             docker stop backend || true
             docker rm backend || true
             docker run -d --name backend -p 3000:3000 ghcr.io/ricohoho/ricofilm-back:latest
