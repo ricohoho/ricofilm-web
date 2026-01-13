@@ -23,10 +23,12 @@ jobs:
 
       - name: Build Docker image
         run: docker build -t ghcr.io/ricohoho/ricofilm-back:latest -f Dockerfile .
+      
+      - name: Login to GitHub Container Registry
+        run: echo "${{ secrets.GHCR_TOKEN }}" | docker login ghcr.io -u ricohoho --password-stdin
+
       - name: Push Docker image
-        run: |
-          echo "${{ secrets.GHCR_TOKEN }}" | docker login ghcr.io -u ricohoho --password-stdin
-          docker push ghcr.io/ricohoho/ricofilm-back:latest
+        run: docker push ghcr.io/ricohoho/ricofilm-back:latest
 
       - name: Deploy via SSH
         uses: appleboy/ssh-action@v1.0.3
