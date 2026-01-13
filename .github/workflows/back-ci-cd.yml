@@ -10,6 +10,7 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    environment: ricofilm  # Spécifiez l'environnement ici
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
