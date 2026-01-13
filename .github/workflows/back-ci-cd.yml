@@ -39,6 +39,7 @@ jobs:
           key: ${{ secrets.SERVER_SSH_KEY }} 
           port: 22
           script: |
+            echo "${{ secrets.GHCR_TOKEN }}" | docker login ghcr.io -u ricohoho --password-stdin
             docker pull ghcr.io/ricohoho/ricofilm-back:latest
             docker stop backend || true
             docker rm backend || true
