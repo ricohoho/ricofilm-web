@@ -15,6 +15,46 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Create .env.production file
+        run: |
+          echo "NODE_ENV=production" > .env.production
+          # Variables de base de données
+          echo "DB_PREFIX=${{ vars.DB_PREFIX }}" > .env.production
+          echo "DB_USER=${{ vars.DB_USER }}" >> .env.production
+          echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" >> .env.production
+          echo "DB_HOST=${{ vars.DB_HOST }}" >> .env.production
+          echo "DB_PORT=${{ vars.DB_PORT }}" >> .env.production
+          echo "DB_NAME=${{ vars.DB_NAME }}" >> .env.production
+          echo "DB_POSTFIX=${{ vars.DB_POSTFIX }}" >> .env.production
+
+          # Variables CORS
+          echo "URL_CORS_ACCEPT=${{ vars.URL_CORS_ACCEPT }}" >> .env.production
+
+          # Variables IA
+          echo "IA_PROTOCOL=${{ vars.IA_PROTOCOL }}" >> .env.production
+          echo "IA_HOST=${{ vars.IA_HOST }}" >> .env.production
+          echo "IA_PORT=${{ vars.IA_PORT }}" >> .env.production
+          echo "IA_URL=${{ vars.IA_URL }}" >> .env.production
+          echo "IA2_URL=${{ vars.IA2_URL }}" >> .env.production
+          echo "IA2b_URL=${{ vars.IA2b_URL }}" >> .env.production
+
+          # Variables TMDB
+          echo "TMDB_API_BEARER_TOKEN=${{ secrets.TMDB_API_BEARER_TOKEN }}" >> .env.production
+          echo "TMDB_API_KEY=${{ secrets.TMDB_API_KEY }}" >> .env.production
+
+          # Variables Emby
+          echo "EMBY_HOST=${{ vars.EMBY_HOST }}" >> .env.production
+          echo "EMBY_API_KEY=${{ secrets.EMBY_API_KEY }}" >> .env.production
+
+          # Variables SMTP
+          echo "SMTP_HOST=${{ vars.SMTP_HOST }}" >> .env.production
+          echo "SMTP_PORT=${{ vars.SMTP_PORT }}" >> .env.production
+          echo "SMTP_USER=${{ vars.SMTP_USER }}" >> .env.production
+          echo "SMTP_PASS=${{ secrets.SMTP_PASS }}" >> .env.production
+          echo "MAIL_FROM=${{ vars.MAIL_FROM }}" >> .env.production
+        env:
+          NODE_ENV: production
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
