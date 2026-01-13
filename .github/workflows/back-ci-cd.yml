@@ -21,9 +21,6 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Build Node.js
-        run: npm run build
-
       - name: Build Docker image
         run: docker build -t ghcr.io/ricohoho/ricofilm-back:latest -f Dockerfile .
       - name: Push Docker image
