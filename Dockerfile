@@ -15,8 +15,10 @@ COPY . .
 COPY .env.production .env.production
 
 # Crée un utilisateur non-root
-RUN addgroup -S appgroup && adduser -S appuser -G appgroup
-RUN chown -R appuser:appgroup /app
+RUN apt-get update && apt-get install -y sudo && \
+    groupadd -r appgroup && useradd -r -g appgroup appuser && \
+    mkdir -p /home/appuser && chown -R appuser:appgroup /home/appuser && \
+    chown -R appuser:appgroup /app
 
 # Passe à l'utilisateur non-root
 USER appuser
