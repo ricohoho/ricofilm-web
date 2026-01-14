@@ -1,4 +1,4 @@
-FROM node:16-bullseye
+FROM node:12-bullseye
 
 WORKDIR /app
 
@@ -29,7 +29,8 @@ USER appuser
 EXPOSE 3000
 
 # Définit NODE_ENV explicitement
-ENV NODE_ENV=production
+#ENV NODE_ENV=production
+ENV NODE_ENV=local
 
 # Démarre l'application
 CMD ["npm", "start"]
