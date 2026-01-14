@@ -1,34 +1,26 @@
-#FROM node:16-bullseye
-FROM node:16-alpine
+FROM node:16-bullseye
 
 WORKDIR /app
 
-
-# Installe sudo et crée un utilisateur non-root avec Alpine
-RUN apk add --no-cache sudo && \
-    addgroup -S appgroup && adduser -S appuser -G appgroup && \
-    mkdir -p /home/appuser && chown -R appuser:appgroup /home/appuser && \
-    chown -R appuser:appgroup /app
-    
+# Installe sudo et crée un utilisateur non-root
+RUN apt-get update && apt-get install -y sudo && \
+    groupadd -r appgroup && useradd -r -g appgroup appuser && \
+    mkdir -p /home/appuser && chown -R appuser:appgroup /home/appuser
 
 # Copie les fichiers de configuration
 COPY package*.json ./
 
-# Installe les dépendances
-RUN npm ci && npm cache clean --force
+# Installe les dépendances en tant que root
+RUN npm install
 
 # Copie le reste de l'application
 COPY . .
 
 # Copie le fichier .env.production
-COPY .env.production .env.production
+COPY .env.production .
 
-# Crée un utilisateur non-root
-#RUN apt-get update && apt-get install -y sudo && \
-#    groupadd -r appgroup && useradd -r -g appgroup appuser && \
-#    mkdir -p /home/appuser && chown -R appuser:appgroup /home/appuser && \
-#    chown -R appuser:appgroup /app
-
+# Change les permissions pour l'utilisateur non-root
+RUN chown -R appuser:appgroup /app
 
 # Passe à l'utilisateur non-root
 USER appuser
