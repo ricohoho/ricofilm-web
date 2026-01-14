@@ -54,7 +54,7 @@ jobs:
           echo "MAIL_FROM=${{ vars.MAIL_FROM }}" >> .env.production
         env:
           NODE_ENV: production
-
+ 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
