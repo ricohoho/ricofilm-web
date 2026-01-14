@@ -3,6 +3,14 @@ FROM node:16-alpine
 
 WORKDIR /app
 
+
+# Installe sudo et crée un utilisateur non-root avec Alpine
+RUN apk add --no-cache sudo && \
+    addgroup -S appgroup && adduser -S appuser -G appgroup && \
+    mkdir -p /home/appuser && chown -R appuser:appgroup /home/appuser && \
+    chown -R appuser:appgroup /app
+    
+
 # Copie les fichiers de configuration
 COPY package*.json ./
 
@@ -16,10 +24,11 @@ COPY . .
 COPY .env.production .env.production
 
 # Crée un utilisateur non-root
-RUN apt-get update && apt-get install -y sudo && \
-    groupadd -r appgroup && useradd -r -g appgroup appuser && \
-    mkdir -p /home/appuser && chown -R appuser:appgroup /home/appuser && \
-    chown -R appuser:appgroup /app
+#RUN apt-get update && apt-get install -y sudo && \
+#    groupadd -r appgroup && useradd -r -g appgroup appuser && \
+#    mkdir -p /home/appuser && chown -R appuser:appgroup /home/appuser && \
+#    chown -R appuser:appgroup /app
+
 
 # Passe à l'utilisateur non-root
 USER appuser
