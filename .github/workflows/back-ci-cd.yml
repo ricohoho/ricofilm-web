@@ -83,4 +83,4 @@ jobs:
             docker pull ghcr.io/ricohoho/ricofilm-back:latest
             docker stop backend || true
             docker rm backend || true
-            docker run -d --name backend -p 3000:3000 ghcr.io/ricohoho/ricofilm-back:latest
+            docker run -d --name backend -p 3000:3000 -e NODE_ENV=production ghcr.io/ricohoho/ricofilm-back:latest
