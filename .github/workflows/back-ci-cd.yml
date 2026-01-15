@@ -50,7 +50,7 @@ jobs:
           username: ${{ vars.SERVER_USER }}
           key: ${{ secrets.SERVER_SSH_KEY }}
           port: 22
-          source: ".env.production, Dockerfile, package.json, package-lock.json, bin/, routes/, app.js"
+          source: ".env.production, Dockerfile, package.json, package-lock.json, bin/, routes/, views/,app.js, app/, public/"
           target: "/home/deploy/ricofilm-back"
 
       - name: Build and Deploy via SSH
@@ -62,6 +62,7 @@ jobs:
           port: 22
           script: |
             cd /home/deploy/ricofilm-back
+            npm install
             echo "${{ secrets.GHCR_TOKEN }}" | docker login ghcr.io -u ricohoho --password-stdin
             docker build -t ghcr.io/ricohoho/ricofilm-back:latest .
             docker push ghcr.io/ricohoho/ricofilm-back:latest
