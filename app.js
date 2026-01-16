@@ -64,7 +64,7 @@ console.log(`dbURL=${dbURL}`);
 
 
 //============================================================
-
+console.log(`require routes`);
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 var filmsRouter = require('./routes/films');
@@ -73,11 +73,15 @@ var imageRouter = require('./routes/image');
 var embyRouter = require('./routes/emby');
 
 
+console.log(`create express app`);
 var app = express();
 
 //Nouvelle version avec plusieurs URL possibles
 const URL_CORS_ACCEPT = process.env.URL_CORS_ACCEPT?.split(",") || [];
 
+console.log("URL_CORS_ACCEPT =", URL_CORS_ACCEPT);
+
+console.log("Setup CORS middleware");
 app.use(
   cors({
     credentials: true,
@@ -98,6 +102,7 @@ app.use(
 );
 
 // view engine setup
+console.log("Setup view engine");
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'pug');
 
@@ -108,6 +113,7 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
 // Swagger Configuration
+console.log("Setup Swagger");
 const swaggerJsdoc = require('swagger-jsdoc');
 const swaggerUi = require('swagger-ui-express');
 
@@ -133,7 +139,7 @@ const swaggerSpec = swaggerJsdoc(swaggerOptions);
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 
-
+console.log("Setup cookie session middleware");
 //EF 20231028 authent =========>
 app.use(
   cookieSession({
@@ -156,6 +162,7 @@ console.log("EMBY_HOST =", process.env.EMBY_HOST);
 console.log("EMBY_API_KEY =", process.env.EMBY_API_KEY);
 
 
+console.log("Connect to MongoDB...");
 //mongodb://user:pass@localhost:27017/ricofilm?retryWrites=true&w=majority&appName=ricofilm
 dbm.mongoose
   //.connect(`mongodb://${authPart}${process.env.DB_HOST}:${process.env.DB_PORT}/${process.env.DB_NAME}`, {
@@ -175,14 +182,18 @@ dbm.mongoose
 
 
 //app.use('/ricofilm', express.static('public'));
+console.log("Setup static files for /ricofilm");
 app.use('/ricofilm', express.static(__dirname + '/public'));
 
 // Make our db accessible to our router
+console.log("Make db accessible to routers");
 app.use(function (req, res, next) {
   req.db = db;
   next();
 });
 
+
+console.log("Setup routes");
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
 app.use('/films', filmsRouter);
@@ -216,6 +227,7 @@ var corsOptions = {
 app.use(cors(corsOptions));
 */
 
+console.log("Setup 404 error handler");
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
   //res.header("Access-Control-Allow-Origin", "*");
@@ -224,6 +236,7 @@ app.use(function (req, res, next) {
 });
 
 // error handler
+console.log("Setup general error handler");
 app.use(function (err, req, res, next) {
   // set locals, only providing error in development
   res.locals.message = err.message;
@@ -240,6 +253,7 @@ module.exports = app;
 
 
 //EF 20231028 authent =========>
+  console.log("Initial role setup function");
 function initial() {
   Role.estimatedDocumentCount((err, count) => {
     if (!err && count === 0) {
