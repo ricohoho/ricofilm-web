@@ -24,6 +24,13 @@ jobs:
           echo "DB_PORT=${{ vars.DB_PORT }}" >> .env.production
           echo "DB_NAME=${{ vars.DB_NAME }}" >> .env.production
           echo "DB_POSTFIX=${{ vars.DB_POSTFIX }}" >> .env.production
+          echo "REMOTE_DB_PREFIX=${{ vars.REMOTE_DB_PREFIX }}" >> .env.production
+          echo "REMOTE_DB_USER=${{ vars.REMOTE_DB_USER }}" >> .env.production
+          echo "REMOTE_DB_PASSWORD=${{ secrets.REMOTE_DB_PASSWORD }}" >> .env.production
+          echo "REMOTE_DB_HOST=${{ vars.REMOTE_DB_HOST }}" >> .env.production
+          echo "REMOTE_DB_PORT=${{ vars.REMOTE_DB_PORT }}" >> .env.production
+          echo "REMOTE_DB_NAME=${{ vars.REMOTE_DB_NAME }}" >> .env.production
+          echo "REMOTE_DB_POSTFIX=${{ vars.REMOTE_DB_POSTFIX }}" >> .env.production
           echo "URL_CORS_ACCEPT=${{ vars.URL_CORS_ACCEPT }}" >> .env.production
           echo "IA_PROTOCOL=${{ vars.IA_PROTOCOL }}" >> .env.production
           echo "IA_HOST=${{ vars.IA_HOST }}" >> .env.production
