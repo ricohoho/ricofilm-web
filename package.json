@@ -17,6 +17,7 @@
     "dotenv": "^16.5.0",
     "express": "~4.17.3",
     "http-errors": "~1.6.2",
+    "jimp": "^0.22.12",
     "jsonwebtoken": "^9.0.0",
     "minimist": "^1.2.8",
     "mongodb": "^3.6.3",
@@ -26,7 +27,6 @@
     "nodemailer": "^6.9.14",
     "primeflex": "^3.2.1",
     "pug": "^3.0.2",
-    "sharp": "^0.33.5",
     "swagger-jsdoc": "^6.2.8",
     "swagger-ui-express": "^5.0.1"
   },

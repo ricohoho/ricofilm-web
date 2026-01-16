@@ -1,5 +1,5 @@
 const express = require('express');
-const sharp = require('sharp');
+const Jimp = require('jimp');
 const axios = require('axios');
 var router = express.Router();
 
@@ -71,10 +71,10 @@ router.get('/resize', async (req, res) => {
 
         const imageBuffer = Buffer.from(response.data, 'binary');
 
-        // Redimensionner l'image avec Sharp
-        const resizedImageBuffer = await sharp(imageBuffer)
-            .resize(width, height)
-            .toBuffer();
+        // Redimensionner l'image avec Jimp
+        const image = await Jimp.read(imageBuffer);
+        image.resize(width, height);
+        const resizedImageBuffer = await image.getBufferAsync(Jimp.MIME_JPEG);
 
         // Configurer la réponse avec l'image redimensionnée
         res.set('Content-Type', 'image/jpeg');
