@@ -1,15 +1,16 @@
-name: Backend CI/CD
+
+name: Backend CI/CD runner
 
 on:
   push:
     branches:
       - master
-  workflow_dispatch:
+    workflow_dispatch:
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    environment: ricofilm
+    environment: ricofilm  # Spécifiez l'environnement ici
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -17,13 +18,15 @@ jobs:
       - name: Create .env.production file
         run: |
           echo "NODE_ENV=production" > .env.production
-          echo "DB_PREFIX=${{ vars.DB_PREFIX }}" >> .env.production
+          # Variables de base de données
+          echo "DB_PREFIX=${{ vars.DB_PREFIX }}" > .env.production
           echo "DB_USER=${{ vars.DB_USER }}" >> .env.production
           echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" >> .env.production
           echo "DB_HOST=${{ vars.DB_HOST }}" >> .env.production
           echo "DB_PORT=${{ vars.DB_PORT }}" >> .env.production
           echo "DB_NAME=${{ vars.DB_NAME }}" >> .env.production
           echo "DB_POSTFIX=${{ vars.DB_POSTFIX }}" >> .env.production
+
           echo "REMOTE_DB_PREFIX=${{ vars.REMOTE_DB_PREFIX }}" >> .env.production
           echo "REMOTE_DB_USER=${{ vars.REMOTE_DB_USER }}" >> .env.production
           echo "REMOTE_DB_PASSWORD=${{ secrets.REMOTE_DB_PASSWORD }}" >> .env.production
@@ -31,17 +34,27 @@ jobs:
           echo "REMOTE_DB_PORT=${{ vars.REMOTE_DB_PORT }}" >> .env.production
           echo "REMOTE_DB_NAME=${{ vars.REMOTE_DB_NAME }}" >> .env.production
           echo "REMOTE_DB_POSTFIX=${{ vars.REMOTE_DB_POSTFIX }}" >> .env.production
+
+          # Variables CORS
           echo "URL_CORS_ACCEPT=${{ vars.URL_CORS_ACCEPT }}" >> .env.production
+
+          # Variables IA
           echo "IA_PROTOCOL=${{ vars.IA_PROTOCOL }}" >> .env.production
           echo "IA_HOST=${{ vars.IA_HOST }}" >> .env.production
           echo "IA_PORT=${{ vars.IA_PORT }}" >> .env.production
           echo "IA_URL=${{ vars.IA_URL }}" >> .env.production
           echo "IA2_URL=${{ vars.IA2_URL }}" >> .env.production
           echo "IA2b_URL=${{ vars.IA2b_URL }}" >> .env.production
+
+          # Variables TMDB
           echo "TMDB_API_BEARER_TOKEN=${{ secrets.TMDB_API_BEARER_TOKEN }}" >> .env.production
-          echo "TMDB_API_KEY=${{ secrets.TMDB_API_KEY }}" >> .env.proproduction
+          echo "TMDB_API_KEY=${{ secrets.TMDB_API_KEY }}" >> .env.production
+
+          # Variables Emby
           echo "EMBY_HOST=${{ vars.EMBY_HOST }}" >> .env.production
           echo "EMBY_API_KEY=${{ secrets.EMBY_API_KEY }}" >> .env.production
+
+          # Variables SMTP
           echo "SMTP_HOST=${{ vars.SMTP_HOST }}" >> .env.production
           echo "SMTP_PORT=${{ vars.SMTP_PORT }}" >> .env.production
           echo "SMTP_USER=${{ vars.SMTP_USER }}" >> .env.production
@@ -49,30 +62,33 @@ jobs:
           echo "MAIL_FROM=${{ vars.MAIL_FROM }}" >> .env.production
         env:
           NODE_ENV: production
-
-      - name: Copy files to server
-        uses: appleboy/scp-action@v0.1.4
+ 
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
-          host: ${{ vars.SERVER_IP }}
-          username: ${{ vars.SERVER_USER }}
-          key: ${{ secrets.SERVER_SSH_KEY }}
-          port: 22
-          source: ".env.production, Dockerfile, package.json, package-lock.json, bin/, routes/, views/,app.js, app/, public/"
-          target: "/home/deploy/ricofilm-back"
+          node-version: 18
+      - name: Install dependencies
+        run: npm install
 
-      - name: Build and Deploy via SSH
+      - name: Build Docker image
+        run: docker build -t ghcr.io/ricohoho/ricofilm-back:latest -f Dockerfile .
+      
+      - name: Login to GitHub Container Registry
+        run: echo "${{ secrets.GHCR_TOKEN }}" | docker login ghcr.io -u ricohoho --password-stdin
+
+      - name: Push Docker image
+        run: docker push ghcr.io/ricohoho/ricofilm-back:latest
+
+      - name: Deploy via SSH
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ vars.SERVER_IP }}
           username: ${{ vars.SERVER_USER }}
-          key: ${{ secrets.SERVER_SSH_KEY }}
+          key: ${{ secrets.SERVER_SSH_KEY }} 
           port: 22
           script: |
-            cd /home/deploy/ricofilm-back
-            npm install
             echo "${{ secrets.GHCR_TOKEN }}" | docker login ghcr.io -u ricohoho --password-stdin
-            docker build -t ghcr.io/ricohoho/ricofilm-back:latest .
-            docker push ghcr.io/ricohoho/ricofilm-back:latest
+            docker pull ghcr.io/ricohoho/ricofilm-back:latest
             docker stop backend || true
             docker rm backend || true
-            docker run -d --name backend -p 3000:3000 --env-file .env.production ghcr.io/ricohoho/ricofilm-back:latest
+            docker run -d --name backend -p 3000:3000 -e NODE_ENV=production ghcr.io/ricohoho/ricofilm-back:latest
