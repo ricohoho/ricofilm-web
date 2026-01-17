@@ -7,13 +7,13 @@ var logger = require('morgan');
 
 //== Ajour de l'authentificaiton avec JWT + Mango + Express
 //https://www.bezkoder.com/node-js-express-login-mongodb/ 
-//EF 20231028 authent
 const cors = require("cors");
 const cookieSession = require("cookie-session");
 
 
 // Détermine l'environnement actif (par défaut : 'local')
 const env = process.env.NODE_ENV || 'local';
+
 // Charge le fichier .env correspondant
 dotenv.config({ path: path.resolve(__dirname, `.env.${env}`) });
 console.log(`✅ Loaded configuration for environment: ${env}`);
@@ -41,22 +41,9 @@ const authPart = dbUser && dbPassword ? `${encodeURIComponent(dbUser)}:${encodeU
 console.log(`authPart=${authPart}`);
 const dbPortURL = process.env.DB_PORT ? `:${process.env.DB_PORT}` : '';
 console.log(`dbPortURL=${dbPortURL}`);
-//Version Local
-//var db = monk('localhost:27017/ricofilm');
-//var db = monk('mongo-container:27017/ricofilm');
-//===> avec fichier de conf <===============================
-//const dbConfig = require("./app/config/db.config");
-//var db = monk(`${dbConfig.HOST}:${dbConfig.PORT}/${dbConfig.DB}`);
-//============================================================
-//var db = monk(`172.21.82.150:27017/ricofilm`);
-//var db = monk('mongodb://ricoAdmin:rineka5993@davic.mkdh.fr:27017/ricofilm');
-//===> Utilisation des variables d'environnement pour la connexion <===============================
-//const db = monk(`mongodb://${process.env.DB_USER}:${process.env.DB_PASSWORD}@${process.env.DB_HOST}:${process.env.DB_PORT}/${process.env.DB_NAME}`);
 
 //Version cnx Mongo OK
-// const db = monk(`mongodb://${authPart}${process.env.DB_HOST}:${process.env.DB_PORT}/${process.env.DB_NAME}`);
 //Version cnx Mongo extnsion cnx Cloud Atlas
-//monk('mongodb+srv://ricohoho:aBgU4K9OvjZlxbJ4@ricofilm.qvkgeo4.mongodb.net/ricofilm?retryWrites=true&w=majority&appName=ricofilm');
 const dbURL = `${dbPrefixURL}${authPart}${process.env.DB_HOST}${dbPortURL}/${process.env.DB_NAME}${dbPostfixURL}`
 
 const db = monk(dbURL);
@@ -163,13 +150,10 @@ console.log("EMBY_API_KEY =", process.env.EMBY_API_KEY);
 
 
 console.log("Connect to MongoDB...");
-//mongodb://user:pass@localhost:27017/ricofilm?retryWrites=true&w=majority&appName=ricofilm
-dbm.mongoose
-  //.connect(`mongodb://${authPart}${process.env.DB_HOST}:${process.env.DB_PORT}/${process.env.DB_NAME}`, {
-  .connect(`${dbURL}`, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true
-  })
+dbm.mongoose.connect(`${dbURL}`, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true
+})
   .then(() => {
     console.log("Successfully connect to MongoDB.");
     initial();
@@ -181,7 +165,6 @@ dbm.mongoose
 //<============================
 
 
-//app.use('/ricofilm', express.static('public'));
 console.log("Setup static files for /ricofilm");
 app.use('/ricofilm', express.static(__dirname + '/public'));
 
@@ -216,16 +199,6 @@ require("./app/routes/request.routes")(app);
 require("./app/routes/mail.routes")(app);
 require("./app/routes/sync.routes")(app);
 
-// =========== Option Cors ==========
-/* 
-const cors = require('cors');
-var corsOptions = {
-    origin: '*',//http://localhost:4200',
-    optionsSuccessStatus: 200, // For legacy browser support
-    methods: "GET, PUT"
-}
-app.use(cors(corsOptions));
-*/
 
 console.log("Setup 404 error handler");
 // catch 404 and forward to error handler
@@ -253,7 +226,7 @@ module.exports = app;
 
 
 //EF 20231028 authent =========>
-  console.log("Initial role setup function");
+console.log("Initial role setup function");
 function initial() {
   Role.estimatedDocumentCount((err, count) => {
     if (!err && count === 0) {
