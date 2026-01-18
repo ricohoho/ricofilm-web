@@ -71,13 +71,13 @@ jobs:
         run: npm install
 
       - name: Build Docker image
-        run: docker build -t ghcr.io/ricohoho/ricofilm-back:latest -f Dockerfile .
+        run: docker build -t ghcr.io/ricohoho/ricofilm-backend:latest -f Dockerfile .
       
       - name: Login to GitHub Container Registry
         run: echo "${{ secrets.GHCR_TOKEN }}" | docker login ghcr.io -u ricohoho --password-stdin
 
       - name: Push Docker image
-        run: docker push ghcr.io/ricohoho/ricofilm-back:latest
+        run: docker push ghcr.io/ricohoho/ricofilm-backend:latest
 
       - name: Deploy via SSH
         uses: appleboy/ssh-action@v1.0.3
@@ -88,7 +88,10 @@ jobs:
           port: 22
           script: |
             echo "${{ secrets.GHCR_TOKEN }}" | docker login ghcr.io -u ricohoho --password-stdin
-            docker pull ghcr.io/ricohoho/ricofilm-back:latest
-            docker stop backend || true
-            docker rm backend || true
-            docker run -d --name backend -p 3000:3000 -e NODE_ENV=production ghcr.io/ricohoho/ricofilm-back:latest
+            docker pull ghcr.io/ricohoho/ricofilm-backend:latest
+            docker stop ricofilm-backend || true
+            docker rm ricofilm-backend || true
+            # Créer le réseau si nécessaire pour faire communiquer les renvoi proxy avec le backend
+            docker network inspect ricofilm-network >/dev/null 2>&1 || docker network create ricofilm-network
+            # Lancer le conteneur en le connectant au réseau : ricofilm-network
+            docker run -d --name ricofilm-backend --network ricofilm-network -p 3000:3000 -e NODE_ENV=production ghcr.io/ricohoho/ricofilm-backend:latest

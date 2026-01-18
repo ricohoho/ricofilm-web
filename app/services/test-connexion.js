@@ -1,6 +1,8 @@
+const monk = require('monk');
 const mongoose = require('mongoose');
-
-mongoose.connect('mongodb://localhost:27017/ricofilm', {
+const mongoURL = 'mongodb+srv://ricohoho:aBgU4K9OvjZlxbJ4@ricofilm.qvkgeo4.mongodb.net/?retryWrites=true&w=majority&appName=ricofilm';
+//const localDb = monk('mongodb://localhost:27017/ricofilm');
+mongoose.connect(mongoURL, {
   useNewUrlParser: true,
   useUnifiedTopology: true
 })
