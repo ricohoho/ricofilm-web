@@ -16,7 +16,7 @@ async function getEmbyItemIdByName(FilmName, options = {}) {
     if (!EMBY_HOST || !EMBY_API_KEY) {
         throw new Error('EMBY_HOST or EMBY_API_KEY not configured');
     }
-
+ 
     const url = `${EMBY_HOST}/Users/${userId}/Items` +
         `?SearchTerm=${encodeURIComponent(FilmName)}` +
         `&IncludeItemTypes=Movie` +
