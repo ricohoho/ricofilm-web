@@ -4,6 +4,8 @@ const dotenv = require('dotenv');
 var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
+const Sentry = require("@sentry/node");
+const { nodeProfilingIntegration } = require("@sentry/profiling-node");
 
 //== Ajour de l'authentificaiton avec JWT + Mango + Express
 //https://www.bezkoder.com/node-js-express-login-mongodb/ 
@@ -62,6 +64,28 @@ var embyRouter = require('./routes/emby');
 
 console.log(`create express app`);
 var app = express();
+
+Sentry.init({
+  dsn: process.env.SENTRY_DSN,
+  integrations: [
+    nodeProfilingIntegration(),
+  ],
+  // Tracing
+  tracesSampleRate: 1.0, //  Capture 100% of the transactions
+  // Set sampling rate for profiling - this is relative to tracesSampleRate
+  profilesSampleRate: 1.0,
+  environment: process.env.NODE_ENV || 'local',
+});
+
+// The request handler must be the first middleware on the app
+// Removed in favor of OTel auto-instrumentation in newer Sentry versions
+// app.use(Sentry.Handlers.requestHandler());
+
+// TracingHandler creates a trace for every incoming request
+// app.use(Sentry.Handlers.tracingHandler());
+
+
+
 
 //Nouvelle version avec plusieurs URL possibles
 const URL_CORS_ACCEPT = process.env.URL_CORS_ACCEPT?.split(",") || [];
@@ -199,6 +223,12 @@ require("./app/routes/request.routes")(app);
 require("./app/routes/mail.routes")(app);
 require("./app/routes/sync.routes")(app);
 
+app.get("/debug-sentry", function mainHandler(req, res) {
+  throw new Error("My first Sentry error!");
+});
+
+// The error handler must be registered before any other error middleware and after all controllers
+Sentry.setupExpressErrorHandler(app);
 
 console.log("Setup 404 error handler");
 // catch 404 and forward to error handler

@@ -1,4 +1,3 @@
-
 name: Backend CI/CD runner
 
 on:
@@ -10,7 +9,7 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    environment: ricofilm  # Spécifiez l'environnement ici
+    environment: ricofilm # Spécifiez l'environnement ici
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -53,6 +52,8 @@ jobs:
           # Variables Emby
           echo "EMBY_HOST=${{ vars.EMBY_HOST }}" >> .env.production
           echo "EMBY_API_KEY=${{ secrets.EMBY_API_KEY }}" >> .env.production
+          echo "EMBY_USER_ID=${{ secrets.EMBY_USER_ID }}" >> .env.production
+
 
           # Variables SMTP
           echo "SMTP_HOST=${{ vars.SMTP_HOST }}" >> .env.production
@@ -62,7 +63,7 @@ jobs:
           echo "MAIL_FROM=${{ vars.MAIL_FROM }}" >> .env.production
         env:
           NODE_ENV: production
- 
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
@@ -72,7 +73,7 @@ jobs:
 
       - name: Build Docker image
         run: docker build -t ghcr.io/ricohoho/ricofilm-backend:latest -f Dockerfile .
-      
+
       - name: Login to GitHub Container Registry
         run: echo "${{ secrets.GHCR_TOKEN }}" | docker login ghcr.io -u ricohoho --password-stdin
 
@@ -84,7 +85,7 @@ jobs:
         with:
           host: ${{ vars.SERVER_IP }}
           username: ${{ vars.SERVER_USER }}
-          key: ${{ secrets.SERVER_SSH_KEY }} 
+          key: ${{ secrets.SERVER_SSH_KEY }}
           port: 22
           script: |
             echo "${{ secrets.GHCR_TOKEN }}" | docker login ghcr.io -u ricohoho --password-stdin

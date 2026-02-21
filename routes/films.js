@@ -1,4 +1,5 @@
 const { authJwt } = require("../app/middlewares");
+const Sentry = require("@sentry/node");
 const axios = require('axios');
 var express = require('express');
 var router = express.Router();
@@ -299,9 +300,16 @@ router.get('/list', async function (req, res) {
       _filmname = _filmname.substring(_filmname.indexOf(iaChoice) + iaChoice.length);
       console.log('requete IA: ' + _filmname);
       const requestData = { requete: _filmname };
+      var srequete = null;
       try {
 
-        var srequete = await callExternalServiceMistral(iaChoice, requestData);
+
+        try {
+          srequete = await callExternalServiceMistral(iaChoice, requestData);
+        } catch (error) {
+          Sentry.captureException(error);
+          //return res.status(500).json({ message: 'Internal Server Error' });
+        }
 
         if (iaChoice == RECHERCHE_IA2 && srequete != null) {
           /*le retour est sous la forme  : La réponse est un objet JSON: 
@@ -353,6 +361,7 @@ router.get('/list', async function (req, res) {
 
       } catch (error) {
         console.error('Error calling external service IA:', error);
+        Sentry.captureException(error);
         var objrequete = { "id": "0" };
         var objrequete = JSON.parse(srequete);
         //throw error;
