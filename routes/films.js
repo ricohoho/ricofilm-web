@@ -434,12 +434,21 @@ router.get('/list', async function (req, res) {
 
   }
 
+  // Gestion des propriétés : ajout d'optimisation du 22/02/2026
+  var _usage = req.query.usage;
+  var projection = '';
+  if (_usage === 'list') {
+      // _id is included by default in MongoDB projections unless explicitly excluded
+      projection = ',"projection": { "_id": 1, "id": 1, "title": 1, "original_title": 1, "poster_path": 1, "backdrop_path": 1, "release_date": 1, "status": 1, "UPDATE_DB_DATE": 1, "RICO_FICHIER": 1 }';
+  }
+
   console.log('sortComplet' + sortComplet);
 
   optionBDString = '{' +
     '"limit": ' + _limit + ',' +
     '"skip":' + _skip + ',' +
     '"sort":{"' + _sort + '":' + _sortsens + '}' +
+    projection +
     '}';
   console.log('optionBD:' + optionBDString);
   optionBD = JSON.parse(optionBDString);
@@ -577,8 +586,44 @@ router.get('/list', async function (req, res) {
       res.json(docs);
     });
 
+  });
 
 
+  /**
+   * @swagger
+   * /films/detail/id/{id}:
+   *   get:
+   *     summary: Get film details by ID
+   *     tags: [Films]
+   *     parameters:
+   *       - in: path
+   *         name: id
+   *         required: true
+   *         schema:
+   *           type: string
+   *         description: The film MongoDB ID
+   *     responses:
+   *       200:
+   *         description: Film details
+   *         content:
+   *           application/json:
+   *             schema:
+   *                 type: object
+   */
+  router.get('/detail/id/:id', function (req, res) {
+    res.header("Access-Control-Allow-Origin", "*");
+    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+    var db = req.db;
+    var collection = db.get('films');
+    var _id = req.params.id;
+    
+    collection.findOne({ _id: _id }, function (e, doc) {
+      if (e) {
+        res.status(500).send(e);
+      } else {
+        res.json(doc);
+      }
+    });
   });
 
 
