@@ -72,7 +72,7 @@ router.get('/listmenufilmimage', function (req, res) {
   const projection = { original_title: 1 };
 
   optionBDString = '{' +
-    '"projection":{ "id": 1,"original_title":1,"title":1,"UPDATE_DB_DATE":1,"backdrop_path":1,"credits":1,"poster_path":1},' +
+    '"projection":{ "id": 1, "original_title": 1, "title": 1, "UPDATE_DB_DATE": 1, "backdrop_path": 1, "credits": 1, "poster_path": 1, "overview": 1, "vote_average": 1, "release_date": 1, "genres": 1 },' +
     '"limit": ' + _limit + ',' +
     '"skip":' + _skip + ',' +
     '"sort":{"' + _sort + '":' + _sortsens + '}' +
