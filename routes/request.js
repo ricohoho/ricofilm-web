@@ -1,10 +1,8 @@
-//const { authJwt } = require("../app/middlewares");
 var express = require('express');
 var router = express.Router();
 
 /* GET users listing. */
 router.get('/', function (req, res, next) {
-  //res.send('respond with a resource');
   //RICO : request est le nom du tempate .jade !
   res.render('request', { title: 'RicoFilm' });
 });
@@ -71,7 +69,7 @@ router.get('/', function (req, res, next) {
  *           application/json:
  *             schema:
  *               type: array
- *               items:
+ *               items: 
  *                 type: object
  */
 router.get('/list', function (req, res) {
@@ -86,45 +84,29 @@ router.get('/list', function (req, res) {
   console.log('_status: ' + _status);
   console.log('_serveur_name: ' + _serveur_name);
 
-  var srequete1 = '';
-  var srequete2 = '';
+  // Build query object directly instead of parsing JSON string
+  // This prevents injection attacks and JSON parse errors
+  var query = {};
 
-  if (_username) {
-    //var srequete1='{"username":"'+_username+'"}';
-    var srequete = '"username":"' + _username + '"';
-  } else {
-    var srequete = '';
+  if (_username && typeof _username === 'string' && _username.trim()) {
+    query.username = _username;
   }
 
+  if (_status && typeof _status === 'string' && _status.trim()) {
+    query.status = _status;
+  }
 
-  if (_status) {
-    if (srequete == '') {
-      var srequete = '"status":"' + _status + '"';
-    } else {
-      var srequete = srequete + ',"status":"' + _status + '"';
+  if (_serveur_name && typeof _serveur_name === 'string' && _serveur_name.trim()) {
+    query.serveur_name = _serveur_name;
+  }
+
+  console.log('query: ' + JSON.stringify(query));
+
+  collection.find(query, {}, function (e, docs) {
+    if (e) {
+      console.log('Error fetching requests: ' + e);
+      return res.status(500).json({ error: 'Error fetching requests' });
     }
-  }
-
-
-  if (_serveur_name) {
-    if (srequete == '') {
-      var srequete = '"serveur_name":"' + _serveur_name + '"';
-    } else {
-      var srequete = srequete + ',"serveur_name":"' + _serveur_name + '"';
-    }
-  }
-
-
-
-  var srequete = '{ ' +
-    srequete +
-    '}';
-  console.log('srequete: ' + srequete);
-
-  var objrequete = JSON.parse(srequete);
-
-
-  collection.find(objrequete, {}, function (e, docs) {
     res.json(docs);
   });
 });
@@ -204,19 +186,35 @@ router.post('/edit', function (req, res, next) {
   var username = req.body.username;
   var status = req.body.status;
   var file = req.body.file;
-  console.log('editrequest: id:' + req.body.id + '->' + status);
-  console.log('editrequest: file' + file);
-  collection.update({ 'id': req.body.id },
-    { $set: { 'status': status, 'username': username } }, function (err, result) {
-      if (err) {
-        console.log('editrequest: erreur' + err);
-        throw err;
-      }
-      res.send(
-        (err === null) ? { msg: '' } : { msg: err }
-      );
-    });
-  console.log('editrequest: Fin ');
+  var id = req.body.id;
+
+  // Validate required fields
+  if (!id) {
+    return res.status(400).json({ msg: 'Missing id field' });
+  }
+
+  console.log('editrequest: id:' + id + '->' + status);
+  console.log('editrequest: file:' + file);
+
+  // Build update object with only provided fields
+  var updateObj = {};
+  if (status !== undefined) updateObj.status = status;
+  if (username !== undefined) updateObj.username = username;
+  if (file !== undefined) updateObj.file = file;
+
+  // Handle empty update
+  if (Object.keys(updateObj).length === 0) {
+    return res.status(400).json({ msg: 'No fields to update' });
+  }
+
+  collection.update({ 'id': id }, { $set: updateObj }, function (err, result) {
+    if (err) {
+      console.log('editrequest: erreur' + err);
+      return res.status(500).json({ msg: err.toString() });
+    }
+    res.send({ msg: '' });
+  });
+  console.log('editrequest: Fin');
 });
 
 /* DELETE to deleteuser. */
@@ -240,14 +238,22 @@ router.post('/edit', function (req, res, next) {
 router.delete('/delete/:id', function (req, res) {
   var db = req.db;
   var collection = db.get('request');
-  var userToDelete = req.params.id;
-  // IDs seem to be stored as numbers, so we try to convert.
-  // If it's a valid number, we use it as a number.
-  if (!isNaN(userToDelete)) {
-    userToDelete = parseInt(userToDelete);
+  var idToDelete = req.params.id;
+
+  // Validate input
+  if (!idToDelete || typeof idToDelete !== 'string' || !idToDelete.trim()) {
+    return res.status(400).json({ msg: 'Invalid id parameter' });
   }
-  collection.remove({ 'id': userToDelete }, function (err) {
-    res.send((err === null) ? { msg: '' } : { msg: 'error: ' + err });
+
+  // Try to convert to number if it looks like one, otherwise keep as string
+  var query = { 'id': isNaN(idToDelete) ? idToDelete : parseInt(idToDelete) };
+
+  collection.remove(query, function (err) {
+    if (err) {
+      console.log('Error deleting request: ' + err);
+      return res.status(500).json({ msg: 'error: ' + err });
+    }
+    res.send({ msg: '' });
   });
 });
 
