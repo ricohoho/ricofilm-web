@@ -219,7 +219,7 @@ class RicofilmMcpserver {
 
   async handleSSE(req, res) {
     console.error("[MCP] Nouvelle connexion SSE client");
-    
+     
     // Le SDK ModelContextProtocol génère automatiquement un UUID de session 
     // et l'ajoute à l'URL relative fournie.
     // On construit l'endpoint POST absolu public
