@@ -8,6 +8,7 @@
     "start:local": "dotenv -e .env.local -- node ./bin/www"
   },
   "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.27.1",
     "@sentry/node": "^10.38.0",
     "@sentry/profiling-node": "^10.38.0",
     "axios": "^1.7.5",

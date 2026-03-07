@@ -60,6 +60,7 @@ var filmsRouter = require('./routes/films');
 var resquestRouter = require('./routes/request');
 var imageRouter = require('./routes/image');
 var embyRouter = require('./routes/emby');
+var mcpRouter = require('./routes/mcp');
 
 
 console.log(`create express app`);
@@ -101,7 +102,8 @@ app.use(
       if (!origin) return callback(null, true);
 
       const allowedOrigins = [...URL_CORS_ACCEPT, "http://localhost:3000", "http://127.0.0.1:3000"];
-      if (allowedOrigins.includes(origin)) {
+      // Autoriser tous les ports locaux pour l'inspecteur MCP (ex: http://localhost:6274 ou 5173)
+      if (allowedOrigins.includes(origin) || origin.startsWith("http://localhost:") || origin.startsWith("http://127.0.0.1:")) {
         callback(null, true);
       } else {
         console.error("CORS blocked origin:", origin);
@@ -207,6 +209,7 @@ app.use('/films', filmsRouter);
 app.use('/request', resquestRouter);
 app.use('/image', imageRouter);
 app.use('/emby', embyRouter);
+app.use('/mcp', mcpRouter);
 
 
 app.use('/ricofilm/', indexRouter);
@@ -215,6 +218,7 @@ app.use('/ricofilm/films', filmsRouter);
 app.use('/ricofilm/request', resquestRouter);
 app.use('/ricofilm/image', imageRouter);
 app.use('/ricofilm/emby', embyRouter);
+app.use('/ricofilm/mcp', mcpRouter);
 
 // routes Authentification
 require("./app/routes/auth.routes")(app);

@@ -1,0 +1,13 @@
+{
+	"mcpServers": {
+		"Ricofilm": {
+			"command": "wsl.exe",
+			"args": [
+				"/home/efassel/.nvm/versions/node/v22.20.0/bin/node",
+				"/home/efassel/ricofilm/ricofilm-web/app/mcp/mcp-roo-server.js"
+			],
+			"disabled": false,
+			"alwaysAllow": []
+		}
+	}
+}

@@ -540,7 +540,7 @@ router.get('/list', async function (req, res) {
       res.json(obj);
     });
   }
-
+});
 
   /**
    * @swagger
@@ -575,11 +575,17 @@ router.get('/list', async function (req, res) {
     //var _film=req.query.film;
     var _film = req.params.film;
     console.log('requete: film ' + _film);
+    var objrequete;
     if (_film) {
-      var objrequete = { original_title: { '$regex': _film, '$options': 'i' } }
+      if (_film.toLowerCase().startsWith('id:')) {
+         var int_id = parseInt(_film.substring(3), 10);
+         objrequete = { id: int_id };
+      } else {
+         objrequete = { original_title: { '$regex': _film, '$options': 'i' } };
+      }
     } else {
       var srequete = '{}';
-      var objrequete = JSON.parse(srequete);
+      objrequete = JSON.parse(srequete);
     }
 
     collection.find(objrequete, {}, function (e, docs) {
@@ -615,9 +621,25 @@ router.get('/list', async function (req, res) {
     res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
     var db = req.db;
     var collection = db.get('films');
-    var _id = req.params.id;
+    var paramId = req.params.id;
+    console.log('requete: film ' + paramId);
     
-    collection.findOne({ _id: _id }, function (e, doc) {
+    var query = {};
+    // Si c'est un format de Mongo ObjectId (24 char hex)
+    if (paramId.length === 24 && /^[0-9a-fA-F]{24}$/.test(paramId)) {
+      query = { _id: paramId };
+    } else if (/^tt\d+$/.test(paramId)) {
+      // Si c'est un IMDB ID (ex: tt0133093)
+      query = { imdb_id: paramId };
+    } else if (!isNaN(paramId)) {
+      // Si c'est un identifiant numérique (TMDB ID comme 603)
+      query = { id: parseInt(paramId, 10) };
+    } else {
+      // Fallback
+      query = { id: paramId };
+    }
+
+    collection.findOne(query, function (e, doc) {
       if (e) {
         res.status(500).send(e);
       } else {
@@ -656,8 +678,6 @@ router.get('/list', async function (req, res) {
   });
 
 
-
-});
 
 
 // Convertit un tableau d'objets { imdb_id, title } en requête MongoDB { imdb_id: { $in: [...] } }
