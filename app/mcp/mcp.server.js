@@ -222,7 +222,17 @@ class RicofilmMcpserver {
     
     // Le SDK ModelContextProtocol génère automatiquement un UUID de session 
     // et l'ajoute à l'URL relative fournie.
-    const transport = new SSEServerTransport('/mcp/message', res);
+    // On construit l'endpoint POST absolu public
+    const port = process.env.PORT || 3000;
+    const baseUrl = process.env.BASE_URL || `http://localhost:${port}`;
+    // Utilisez la variable de votre domaine public si elle existe, sinon codez l'URL publique complète
+    const publicUrl = process.env.PUBLIC_URL || baseUrl; 
+    // Initialisation avec l'URL absolue
+    const messageEndpoint = new URL('/mcp/message', publicUrl).toString(); 
+    // Si publicUrl vaut "https://film.ricohoho.fr", messageEndpoint vaudra "https://film.ricohoho.fr/mcp/message"
+    const transport = new SSEServerTransport(messageEndpoint, res);
+    //Ancine version avec l'RL relative , mai ne fonctionne pas avec le reverse proxy
+    //const transport = new SSEServerTransport('/mcp/message', res);
     const sessionId = transport.sessionId;
     
     console.error(`[MCP] Endpoint message configuré pour la session : ${sessionId}`);
