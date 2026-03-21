@@ -161,7 +161,11 @@ class RicofilmMcpserver {
 
           // 2. Construire la réponse en texte brut
           let responseText = `Film: ${doc.title}\n`;
-          if (doc.status === 'requested_from_tmdb' || doc.rico_fichier.serveur_name!='davic.mkdh.fr') {
+          
+// Vérification de la présence
+const estPresentSurDavic = doc.RICO_FICHIER.some(f => f.serveur_name === 'davic.mkdh.fr');
+
+          if (doc.status === 'requested_from_tmdb' || !estPresentSurDavic) {
              responseText += `ATTENTION: Le film ne semble pas avoir de fichier physique et est en mode statut="${doc.status}". Il est probablement non disponible pour le streaming. Utilisez l'outil request_film.\n`;
           } else {
             responseText += `Lien pour lecture direct API (streaming HTTP partiel): ${streamApi}\n`;
