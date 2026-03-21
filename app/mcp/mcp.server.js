@@ -157,13 +157,16 @@ class RicofilmMcpserver {
           
           const streamApi = `${publicUrl}/emby/stream/${encodeURIComponent(doc.original_title || doc.title)}`;
           const downloadApi = `${publicUrl}/emby/download/${encodeURIComponent(doc.original_title || doc.title)}/film.mp4`;
-          
+          console.log("doc.status", doc.status);
+
+          // 2. Construire la réponse en texte brut
           let responseText = `Film: ${doc.title}\n`;
-          if (doc.status === 'wanted' || doc.status === 'added_from_tmdb') {
+          if (doc.status === 'requested_from_tmdb' || doc.rico_fichier.serveur_name!='davic.mkdh.fr') {
              responseText += `ATTENTION: Le film ne semble pas avoir de fichier physique et est en mode statut="${doc.status}". Il est probablement non disponible pour le streaming. Utilisez l'outil request_film.\n`;
+          } else {
+            responseText += `Lien pour lecture direct API (streaming HTTP partiel): ${streamApi}\n`;
+            responseText += `Lien pour télécharger: ${downloadApi}\n`;
           }
-          responseText += `Lien pour lecture direct API (streaming HTTP partiel): ${streamApi}\n`;
-          responseText += `Lien pour télécharger: ${downloadApi}\n`;
           
           return { content: [{ type: "text", text: responseText }] };
         }
