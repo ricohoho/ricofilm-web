@@ -1,5 +1,6 @@
 var express = require('express');
 var router = express.Router();
+const mailService = require('../app/services/mail.service');
 
 /* GET users listing. */
 router.get('/', function (req, res, next) {
@@ -145,9 +146,14 @@ router.post('/add', function (req, res) {
   var db = req.db;
   var collection = db.get('request');
   collection.insert(req.body, function (err, result) {
-    res.send(
-      (err === null) ? { msg: '' } : { msg: err }
-    );
+    if (err === null) {
+      mailService.notifyAdminsNewRequest(req.body).catch(e =>
+        console.error('[request/add] Erreur notification mail :', e.message || e)
+      );
+      res.send({ msg: '' });
+    } else {
+      res.send({ msg: err });
+    }
   });
 });
 
