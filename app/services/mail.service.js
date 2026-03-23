@@ -2,10 +2,21 @@ const Mailjet = require('node-mailjet');
 const User = require('../models/user.model');
 const Role = require('../models/role.model');
 
-const mailjet = Mailjet.apiConnect(
-  process.env.MJ_APIKEY_PUBLIC,
-  process.env.MJ_APIKEY_PRIVATE
-);
+// Initialisation paresseuse : le client est créé au premier appel,
+// pas au démarrage du serveur (évite les crashs si les env vars sont absentes).
+let _mailjetClient = null;
+function getClient() {
+  if (!_mailjetClient) {
+    if (!process.env.MJ_APIKEY_PUBLIC || !process.env.MJ_APIKEY_PRIVATE) {
+      throw new Error('[mail.service] MJ_APIKEY_PUBLIC / MJ_APIKEY_PRIVATE manquants');
+    }
+    _mailjetClient = Mailjet.apiConnect(
+      process.env.MJ_APIKEY_PUBLIC,
+      process.env.MJ_APIKEY_PRIVATE
+    );
+  }
+  return _mailjetClient;
+}
 
 /**
  * Envoie un mail via MailJet.
@@ -17,7 +28,7 @@ const mailjet = Mailjet.apiConnect(
 exports.sendMail = async (to, subject, textPart, htmlPart) => {
   const recipients = (Array.isArray(to) ? to : [to]).map(email => ({ Email: email }));
 
-  const response = await mailjet.post('send', { version: 'v3.1' }).request({
+  const response = await getClient().post('send', { version: 'v3.1' }).request({
     Messages: [
       {
         From: {
