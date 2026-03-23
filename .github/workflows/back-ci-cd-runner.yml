@@ -34,6 +34,11 @@ jobs:
           echo "REMOTE_DB_NAME=${{ vars.REMOTE_DB_NAME }}" >> .env.production
           echo "REMOTE_DB_POSTFIX=${{ vars.REMOTE_DB_POSTFIX }}" >> .env.production
 
+          # Variables Mailjet
+          echo "MJ_APIKEY_PUBLIC=${{ secrets.MJ_APIKEY_PUBLIC }}" >> .env.production
+          echo "MJ_APIKEY_PRIVATE=${{ secrets.MJ_APIKEY_PRIVATE }}" >> .env.production
+          echo "MJ_SENDER_EMAIL=${{ vars.MJ_SENDER_EMAIL }}" >> .env.production
+          echo "MJ_SENDER_NAME=${{ vars.MJ_SENDER_NAME }}" >> .env.production
 
           # Variables utilisée par MCP
           echo "PUBLIC_URL=${{ vars.PUBLIC_URL }}" >> .env.production
