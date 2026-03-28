@@ -76,9 +76,12 @@ exports.signin = (req, res) => {
   }
   console.log(`signin username=${req.body.username} password=${req.body.password}`);
 
-  User.findOne({
-    username: req.body.username,
-  })
+  const loginValue = req.body.username;
+  const query = loginValue.includes('@')
+    ? { email: loginValue }
+    : { username: loginValue };
+
+  User.findOne(query)
     .populate("roles", "-__v")
     .exec((err, user) => {
       if (err) {
