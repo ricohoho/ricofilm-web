@@ -1,7 +1,3 @@
-// Polyfill Blob pour Node.js 16 (requis par google-auth-library v10)
-if (typeof Blob === 'undefined') {
-  global.Blob = require('buffer').Blob;
-}
 
 var createError = require('http-errors');
 var express = require('express');
