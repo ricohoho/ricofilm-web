@@ -127,10 +127,12 @@ exports.googleSignIn = async (req, res) => {
   if (!idToken) return res.status(400).send({ message: "idToken requis" });
 
   try {
+    console
     const ticket = await googleClient.verifyIdToken({
       idToken,
       audience: process.env.GOOGLE_CLIENT_ID,
     });
+    console.log("Google ID token vérifié");
     const payload = ticket.getPayload();
     const { sub: googleId, email, name } = payload;
 
@@ -139,6 +141,7 @@ exports.googleSignIn = async (req, res) => {
     if (!user) user = await User.findOne({ email }).populate("roles", "-__v");
 
     if (!user) {
+      console.log("Nouvel utilisateur Google, création du compte");
       // Nouvel utilisateur → créer avec active=false (approbation admin requise)
       const defaultRole = await Role.findOne({ name: "user" });
       const newUser = new User({
@@ -157,6 +160,7 @@ exports.googleSignIn = async (req, res) => {
 
     // Lier googleId si l'user existait déjà sans lui
     if (!user.googleId) {
+      console.log("Lier Google ID à l'utilisateur existant");
       user.googleId = googleId;
       await user.save();
     }
