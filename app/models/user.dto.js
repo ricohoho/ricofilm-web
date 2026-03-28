@@ -5,7 +5,7 @@ class UserDto {
     roles: String;
     */
 
-   constructor(id,username, email, rolesString,rolesIds,rolesObj,active) {
+   constructor(id,username, email, rolesString,rolesIds,rolesObj,active,googleId) {
     this.id=id;
     this.username = username;
     this.email = email;
@@ -13,6 +13,7 @@ class UserDto {
     this.rolesIds = rolesIds;
     this.rolesObj=rolesObj;
     this.active=active;
+    this.googleId=googleId;
   };
     
 }

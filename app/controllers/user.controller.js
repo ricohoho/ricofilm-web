@@ -51,7 +51,7 @@ exports.userList  = (req, res) => {
 		console.log(users);
 		console.log('---');
 		var rolesIds = [];
-  		const usersDto = users.map(user => new UserDto(user._id,user.username, user.email,roleList(user),rolesIds,user.roles,user.active));  
+  		const usersDto = users.map(user => new UserDto(user._id,user.username, user.email,roleList(user),rolesIds,user.roles,user.active,user.googleId));
   		//var rolesIds = [];
 		//var rolesString = roleList(users);
   		//const usersDto = users.map(user => new UserDto(user._id,user.username, user.email,rolesString,user.roles,rolesIds,user.active));  

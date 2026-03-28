@@ -5,6 +5,8 @@ const Role = db.role;
 
 var jwt = require("jsonwebtoken");
 var bcrypt = require("bcryptjs");
+const { OAuth2Client } = require("google-auth-library");
+const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 exports.signup = (req, res) => {
   const user = new User({
@@ -118,6 +120,70 @@ exports.signin = (req, res) => {
         token: token,
       });
     });
+};
+
+exports.googleSignIn = async (req, res) => {
+  const { idToken } = req.body;
+  if (!idToken) return res.status(400).send({ message: "idToken requis" });
+
+  try {
+    const ticket = await googleClient.verifyIdToken({
+      idToken,
+      audience: process.env.GOOGLE_CLIENT_ID,
+    });
+    const payload = ticket.getPayload();
+    const { sub: googleId, email, name } = payload;
+
+    // Chercher l'user par googleId puis par email
+    let user = await User.findOne({ googleId }).populate("roles", "-__v");
+    if (!user) user = await User.findOne({ email }).populate("roles", "-__v");
+
+    if (!user) {
+      // Nouvel utilisateur → créer avec active=false (approbation admin requise)
+      const defaultRole = await Role.findOne({ name: "user" });
+      const newUser = new User({
+        username: name || email.split("@")[0],
+        email,
+        googleId,
+        roles: [defaultRole._id],
+        active: false,
+      });
+      await newUser.save();
+      return res.status(200).send({
+        message: "Votre demande est en attente d'approbation.",
+        pendingApproval: true,
+      });
+    }
+
+    // Lier googleId si l'user existait déjà sans lui
+    if (!user.googleId) {
+      user.googleId = googleId;
+      await user.save();
+    }
+
+    if (!user.active) {
+      return res.status(403).send({ message: "Compte en attente d'approbation." });
+    }
+
+    const token = jwt.sign({ id: user.id }, config.secret, {
+      algorithm: "HS256",
+      allowInsecureKeySizes: true,
+      expiresIn: 86400,
+    });
+
+    const authorities = user.roles.map(r => "ROLE_" + r.name.toUpperCase());
+    req.session.token = token;
+
+    return res.status(200).send({
+      id: user._id,
+      username: user.username,
+      email: user.email,
+      roles: authorities,
+      token,
+    });
+  } catch (err) {
+    return res.status(500).send({ message: err.toString() });
+  }
 };
 
 exports.signout = async (req, res) => {

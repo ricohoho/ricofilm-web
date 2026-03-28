@@ -5,7 +5,8 @@ const User = mongoose.model(
   new mongoose.Schema({
     username: String,
     email: String,
-    password: String,
+    password: { type: String },
+    googleId: { type: String },
     roles: [
       {
         type: mongoose.Schema.Types.ObjectId,

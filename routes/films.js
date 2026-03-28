@@ -439,7 +439,7 @@ router.get('/list', async function (req, res) {
   var projection = '';
   if (_usage === 'list') {
       // _id is included by default in MongoDB projections unless explicitly excluded
-      projection = ',"projection": { "_id": 1, "id": 1, "title": 1, "original_title": 1, "poster_path": 1, "backdrop_path": 1, "release_date": 1, "status": 1, "UPDATE_DB_DATE": 1, "RICO_FICHIER": 1 }';
+      projection = ',"projection": { "_id": 1, "id": 1, "title": 1, "original_title": 1, "poster_path": 1, "backdrop_path": 1, "release_date": 1, "status": 1, "UPDATE_DB_DATE": 1, "RICO_FICHIER": 1 , "vote_average": 1}';
   }
 
   console.log('sortComplet' + sortComplet);

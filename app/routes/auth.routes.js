@@ -84,4 +84,27 @@ module.exports = function (app) {
    *         description: User logged out successfully
    */
   app.get("/api/auth/dcnx", controller.signout);
+
+  /**
+   * @swagger
+   * /api/auth/google:
+   *   post:
+   *     summary: Login or register via Google OAuth
+   *     tags: [Auth]
+   *     requestBody:
+   *       required: true
+   *       content:
+   *         application/json:
+   *           schema:
+   *             type: object
+   *             properties:
+   *               idToken:
+   *                 type: string
+   *     responses:
+   *       200:
+   *         description: Login successful or account pending approval
+   *       403:
+   *         description: Account pending approval
+   */
+  app.post("/api/auth/google", controller.googleSignIn);
 };
