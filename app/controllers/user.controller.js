@@ -4,6 +4,7 @@ const Roles = db.role;
 const UserDto = require('../models/user.dto');
 const RoleDto = require('../models/role.dto');
 const mongoose = require("mongoose");
+const mailService = require("../services/mail.service");
 
 //========= Role ===================================//
 exports.allAccess = (req, res) => {
@@ -94,32 +95,30 @@ exports.update = (req, res) => {
     console.log(validRoleIds);
 	
 
-  	User.findByIdAndUpdate(_id,   	
-	  	req.body, 
-	  	/*
-	  	{ 
- 			//$addToSet: { roles: { $each: validRoleIds } }, 
- 			//$addToSet: { roles:  validRoleIds  }, 
- 			$set: { username: username }, // Mise à jour de la propriété name, 
- 			$set: { email: email }//, // Mise à jour de la propriété name, 
- 			//$set: { active: active } // Mise à jour de la propriété name
- 		},
- 		*/
-	  	{ new: true, useFindAndModify: false },
-	  	).then(data => {
-	      if (!data) {
-	        res.status(404).send({
-	          message: `Cannot update Tutorial with id=${_id}. Maybe Tutorial was not found!`
-	        });
-	      } else res.send({ message: "Tutorial was updated successfully." });
-	    })
-	    .catch(err => {
-	    	console.log(err);
-	      res.status(500).send({
-	        message: "Error updating Tutorial with id=" + _id
-	      });
-	    }
-    	)
+	User.findById(_id).then(existingUser => {
+		const wasInactive = existingUser && existingUser.active === false;
+
+		User.findByIdAndUpdate(_id, req.body, { new: true, useFindAndModify: false })
+		.then(data => {
+			if (!data) {
+				return res.status(404).send({
+					message: `Cannot update Tutorial with id=${_id}. Maybe Tutorial was not found!`
+				});
+			}
+			// Envoyer un mail si le compte vient d'être activé
+			if (wasInactive && data.active === true) {
+				mailService.notifyUserAccountActivated({ username: data.username, email: data.email });
+			}
+			res.send({ message: "Tutorial was updated successfully." });
+		})
+		.catch(err => {
+			console.log(err);
+			res.status(500).send({ message: "Error updating Tutorial with id=" + _id });
+		});
+	}).catch(err => {
+		console.log(err);
+		res.status(500).send({ message: "Error finding user with id=" + _id });
+	})
 
 
 

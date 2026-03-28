@@ -58,6 +58,99 @@ exports.getAdminEmails = async () => {
 };
 
 /**
+ * Notifie le nouvel utilisateur que sa demande d'inscription est prise en compte.
+ * @param {object} user - { username, email }
+ */
+exports.notifyUserRegistration = async (user) => {
+  if (!user.email) return;
+  const subject = '[RicoFilm] Votre demande d\'inscription est prise en compte';
+  const textPart = [
+    `Bonjour ${user.username || ''},`,
+    '',
+    'Votre demande d\'inscription sur RicoFilm a bien été reçue.',
+    'Votre accès sera ouvert au plus vite par un administrateur.',
+    '',
+    'À bientôt sur RicoFilm !',
+  ].join('\n');
+  const htmlPart = `
+    <p>Bonjour <b>${user.username || ''}</b>,</p>
+    <p>Votre demande d'inscription sur <b>RicoFilm</b> a bien été reçue.</p>
+    <p>Votre accès sera ouvert au plus vite par un administrateur.</p>
+    <p>À bientôt !</p>
+  `;
+  try {
+    await exports.sendMail(user.email, subject, textPart, htmlPart);
+    console.log(`[mail.service] Confirmation inscription envoyée à ${user.email}`);
+  } catch (err) {
+    console.error('[mail.service] Erreur envoi confirmation inscription :', err.message || err);
+  }
+};
+
+/**
+ * Notifie tous les admins qu'un nouveau compte est en attente d'approbation.
+ * @param {object} user - { username, email }
+ */
+exports.notifyAdminsNewUser = async (user) => {
+  const adminEmails = await exports.getAdminEmails();
+  if (adminEmails.length === 0) {
+    console.log('[mail.service] Aucun admin trouvé, notification ignorée.');
+    return;
+  }
+  const subject = `[RicoFilm] Nouvelle demande d'accès de ${user.username || 'inconnu'}`;
+  const textPart = [
+    'Un nouvel utilisateur vient de s\'inscrire sur RicoFilm et attend votre approbation.',
+    '',
+    `Nom d'utilisateur : ${user.username || '-'}`,
+    `Email             : ${user.email || '-'}`,
+    '',
+    'Rendez-vous dans la liste des utilisateurs pour activer ce compte.',
+  ].join('\n');
+  const htmlPart = `
+    <p>Un nouvel utilisateur vient de s'inscrire sur <b>RicoFilm</b> et attend votre approbation.</p>
+    <table cellpadding="6" style="border-collapse:collapse;">
+      <tr><td><b>Nom d'utilisateur</b></td><td>${user.username || '-'}</td></tr>
+      <tr><td><b>Email</b></td><td>${user.email || '-'}</td></tr>
+    </table>
+    <p>Rendez-vous dans la liste des utilisateurs pour activer ce compte.</p>
+  `;
+  try {
+    await exports.sendMail(adminEmails, subject, textPart, htmlPart);
+    console.log(`[mail.service] Notification nouvel utilisateur envoyée aux admins : ${adminEmails.join(', ')}`);
+  } catch (err) {
+    console.error('[mail.service] Erreur envoi notification admin (nouvel user) :', err.message || err);
+  }
+};
+
+/**
+ * Notifie un utilisateur que son compte vient d'être activé.
+ * @param {object} user - { username, email }
+ */
+exports.notifyUserAccountActivated = async (user) => {
+  if (!user.email) return;
+  const subject = '[RicoFilm] Votre accès a été activé !';
+  const textPart = [
+    `Bonjour ${user.username || ''},`,
+    '',
+    'Bonne nouvelle ! Votre compte RicoFilm vient d\'être activé par un administrateur.',
+    'Vous pouvez maintenant vous connecter et profiter de l\'application.',
+    '',
+    'À très bientôt sur RicoFilm !',
+  ].join('\n');
+  const htmlPart = `
+    <p>Bonjour <b>${user.username || ''}</b>,</p>
+    <p>Bonne nouvelle ! Votre compte <b>RicoFilm</b> vient d'être activé par un administrateur.</p>
+    <p>Vous pouvez maintenant vous connecter et profiter de l'application.</p>
+    <p>À très bientôt !</p>
+  `;
+  try {
+    await exports.sendMail(user.email, subject, textPart, htmlPart);
+    console.log(`[mail.service] Notification activation envoyée à ${user.email}`);
+  } catch (err) {
+    console.error('[mail.service] Erreur envoi notification activation :', err.message || err);
+  }
+};
+
+/**
  * Notifie tous les admins de la création d'une nouvelle demande.
  * @param {object} request - L'objet demande inséré
  */

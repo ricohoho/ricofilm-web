@@ -7,6 +7,7 @@ var jwt = require("jsonwebtoken");
 var bcrypt = require("bcryptjs");
 const { OAuth2Client } = require("google-auth-library");
 const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+const mailService = require("../services/mail.service");
 
 exports.signup = (req, res) => {
   const user = new User({
@@ -40,7 +41,8 @@ exports.signup = (req, res) => {
               res.status(500).send({ message: err });
               return;
             }
-
+            mailService.notifyUserRegistration({ username: user.username, email: user.email });
+            mailService.notifyAdminsNewUser({ username: user.username, email: user.email });
             res.send({ message: "User was registered successfully!" });
           });
         }
@@ -59,7 +61,8 @@ exports.signup = (req, res) => {
             res.status(500).send({ message: err });
             return;
           }
-
+          mailService.notifyUserRegistration({ username: user.username, email: user.email });
+          mailService.notifyAdminsNewUser({ username: user.username, email: user.email });
           res.send({ message: "User was registered successfully!" });
         });
       });
@@ -154,6 +157,8 @@ exports.googleSignIn = async (req, res) => {
         active: false,
       });
       await newUser.save();
+      mailService.notifyUserRegistration({ username: newUser.username, email: newUser.email });
+      mailService.notifyAdminsNewUser({ username: newUser.username, email: newUser.email });
       return res.status(200).send({
         message: "Votre demande est en attente d'approbation.",
         pendingApproval: true,
