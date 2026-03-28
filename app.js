@@ -176,6 +176,7 @@ console.log("EMBY_API_KEY =", process.env.EMBY_API_KEY);
 
 
 console.log("Connect to MongoDB...");
+//dbm.mongoose.set('strictQuery', true);
 dbm.mongoose.connect(`${dbURL}`, {
   useNewUrlParser: true,
   useUnifiedTopology: true

@@ -70,6 +70,9 @@ jobs:
           echo "SMTP_USER=${{ vars.SMTP_USER }}" >> .env.production
           echo "SMTP_PASS=${{ secrets.SMTP_PASS }}" >> .env.production
           echo "MAIL_FROM=${{ vars.MAIL_FROM }}" >> .env.production
+
+          # Variavles GoogleIdentity
+          echo "GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }}" >> .env.production
         env:
           NODE_ENV: production
 
