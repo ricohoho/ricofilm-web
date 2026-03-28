@@ -111,6 +111,56 @@ Cette endpoint rammene tout les film en local avec juste l'id et le title et l'o
  *               items:
  *                 type: object
  */
+/* GET autocomplete : films + acteurs depuis la base locale */
+router.get('/autocomplete', [authJwt.verifyToken], function(req, res) {
+  var q = req.query.q;
+  if (!q || q.trim().length < 3) return res.json([]);
+
+  var db = req.db;
+  var collection = db.get('films');
+  var safeQuery = q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+  var filmQuery = {
+    $or: [
+      { original_title: { $regex: '^' + safeQuery, $options: 'i' } },
+      { title: { $regex: '^' + safeQuery, $options: 'i' } }
+    ]
+  };
+  var actorQuery = { 'credits.cast.name': { $regex: '^' + safeQuery, $options: 'i' } };
+
+  var nameRegex = new RegExp('^' + safeQuery, 'i');
+
+  collection.find(filmQuery, {
+    projection: { id: 1, original_title: 1, title: 1, poster_path: 1 },
+    limit: 8,
+    sort: { original_title: 1 }
+  }, function(e1, filmDocs) {
+    if (e1) { console.error('[autocomplete] filmQuery error:', e1); return res.status(500).json({ error: String(e1) }); }
+
+    collection.find(actorQuery, {
+      projection: { 'credits.cast': 1 },
+      limit: 30
+    }, function(e2, actorDocs) {
+      if (e2) { console.error('[autocomplete] actorQuery error:', e2); return res.status(500).json({ error: String(e2) }); }
+
+      var films = (filmDocs || []).map(function(f) {
+        return { type: 'film', id: f.id, original_title: f.original_title, title: f.title, poster_path: f.poster_path };
+      });
+
+      var actorMap = new Map();
+      (actorDocs || []).forEach(function(doc) {
+        ((doc.credits && doc.credits.cast) || []).forEach(function(member) {
+          if (member && member.name && nameRegex.test(member.name) && !actorMap.has(member.name)) {
+            actorMap.set(member.name, { type: 'actor', name: member.name, profile_path: member.profile_path || null });
+          }
+        });
+      });
+
+      res.json(films.concat(Array.from(actorMap.values()).slice(0, 7)));
+    });
+  });
+});
+
 router.get('/listselect', [authJwt.verifyToken], function (req, res) {
   var db = req.db;
   var collection = db.get('films');

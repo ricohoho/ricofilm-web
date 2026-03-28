@@ -81,6 +81,8 @@ exports.signin = (req, res) => {
     ? { email: loginValue }
     : { username: loginValue };
 
+  console.log(`Querying user with: ${JSON.stringify(query)}`);
+
   User.findOne(query)
     .populate("roles", "-__v")
     .exec((err, user) => {
