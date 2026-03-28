@@ -188,6 +188,7 @@ exports.googleSignIn = async (req, res) => {
       token,
     });
   } catch (err) {
+    console.error("googleSignIn error:", err);
     return res.status(500).send({ message: err.toString() });
   }
 };
