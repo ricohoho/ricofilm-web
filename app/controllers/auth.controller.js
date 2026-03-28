@@ -127,7 +127,9 @@ exports.googleSignIn = async (req, res) => {
   if (!idToken) return res.status(400).send({ message: "idToken requis" });
 
   try {
-    console
+    console.log("Vérification du token Google...");
+    console.log(`idToken: ${idToken}`);
+    console.log(`GOOGLE_CLIENT_ID: ${process.env.GOOGLE_CLIENT_ID}`);
     const ticket = await googleClient.verifyIdToken({
       idToken,
       audience: process.env.GOOGLE_CLIENT_ID,
