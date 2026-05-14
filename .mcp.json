@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "ricofilm": {
+      "type": "stdio",
+      "command": "node",
+      "args": ["./app/mcp/mcp-roo-server.js"]
+    }
+  }
+}

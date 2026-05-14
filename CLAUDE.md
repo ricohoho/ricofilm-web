@@ -1,6 +1,6 @@
-# CLAUDE.md — RicoFilm Web
+# CLAUDE.md
 
-Référence architecture, stack, conventions et commandes pour ce projet.
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
 ---
 
@@ -30,9 +30,26 @@ Référence architecture, stack, conventions et commandes pour ce projet.
 npm run start:local     # Développement local (.env.local)
 npm run start:cloud     # MongoDB cloud (.env.cloudmongo)
 npm start               # Production (.env par défaut)
+npx eslint .            # Lint (config dans eslint.config.mjs)
 ```
 
 Port par défaut : **3000**
+
+### Initialisation de la base de données (première fois)
+
+```bash
+# Démarrer MongoDB en Docker
+docker compose -f docker-compose.db.yml up
+
+# Créer l'utilisateur MongoDB
+docker start ricofilm-mongoc
+mongosh -u admin -p password --authenticationDatabase admin
+# > use ricofilm
+# > db.createUser({ user: "ricohoho", pwd: "...", roles: [{ role: "readWrite", db: "ricofilm" }] })
+
+# Importer les données initiales (commenter/décommenter les collections voulues)
+node app/services/copie-collection.js
+```
 
 ---
 
@@ -48,7 +65,7 @@ Port par défaut : **3000**
   models/                   # Mongoose : User, Role + index.js
   routes/                   # Routes modernes (JWT protégées)
   services/                 # mail.service.js, sync.service.js, externalService.js
-  mcp/                      # Serveur MCP (Model Context Protocol)
+  mcp/                      # Serveur MCP : mcp.server.js (HTTP/SSE) + mcp-roo-server.js (stdio pour Roo/Cline)
 /routes/                    # Routes legacy (Monk, sans auth)
 /views/                     # Templates Pug
 /public/                    # Assets statiques JS/CSS
@@ -76,7 +93,8 @@ Les deux accèdent à la **même instance MongoDB**.
 | Méthode | Route | Description |
 |---------|-------|-------------|
 | POST | `/api/auth/signup` | Inscription |
-| POST | `/api/auth/signin` | Connexion → JWT |
+| POST | `/api/auth/signin` | Connexion → JWT (accepte email ou username) |
+| POST | `/api/auth/google` | Connexion via Google OAuth |
 | GET | `/api/auth/dcnx` | Déconnexion |
 
 ### Users (Mongoose + JWT)
@@ -90,6 +108,7 @@ Les deux accèdent à la **même instance MongoDB**.
 | Méthode | Route | Description |
 |---------|-------|-------------|
 | GET | `/films/list` | Recherche (titre, acteur, réal, IA, TMDB) |
+| GET | `/films/listselect` | Autocomplete titres et acteurs |
 | GET | `/films/detail/:film` | Détail par titre ou `id:X` |
 | GET | `/films/detail/id/:id` | Détail par ID |
 | POST | `/films/add` | Ajouter un film |
@@ -206,5 +225,7 @@ await mailService.notifyAdminsNewRequest(request);
 - **`.env.*` contiennent des secrets** — ne jamais committer `.env.local` / `.env.production`
 - **Pas de rate limiting** — aucune protection brute force sur les routes auth
 - **Routes dupliquées** — chaque route montée sur `/` ET `/ricofilm/` (legacy)
-- **18 vulnérabilités npm** signalées — voir `npm audit`
+- **24 vulnérabilités npm** signalées (dont 7 high) — voir `npm audit`
 - **Notification mail admins** — basée sur `User.active = true` + rôle `admin` dans MongoDB
+- **Module system** du dossier `app/mcp/` — ES modules (`import`/`export`) via `"type": "module"` local, contrairement au reste du projet en CommonJS
+- **Pas de framework de test configuré**
