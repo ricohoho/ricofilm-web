@@ -141,8 +141,8 @@ const swaggerOptions = {
     },
     servers: [
       {
-        url: 'http://localhost:3000',
-        description: 'Local server',
+        url: process.env.PUBLIC_URL || 'http://localhost:3000',
+        description: 'Server',
       },
     ],
   },

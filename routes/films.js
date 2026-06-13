@@ -205,48 +205,114 @@ router.get('/listselect', [authJwt.verifyToken], function (req, res) {
 
 
 /* GET list film */
-//router.get('/list', [authJwt.verifyToken], async function(req, res) {
 /**
  * @swagger
  * /films/list:
  *   get:
- *     summary: Get a list of films
+ *     summary: Recherche et liste de films
+ *     description: >
+ *       Deux modes de recherche disponibles.
+ *       Mode 1 (parametre filmname avec prefixe) : sans prefixe=recherche globale titre+acteur+realisateur,
+ *       titre:X=titre seulement, acteur:X=nom acteur, real:X=realisateur, id:123=identifiant TMDB numerique,
+ *       yyyymm:YYYYMM=films ajoutes en base ce mois (ex yyyymm:202503), ia:X=recherche IA simple, ia2:X=recherche IA avancee (complete depuis TMDB si absent).
+ *       Mode 2 (filtres detailles, uniquement si filmname absent) : utiliser title, original_title, actor, director, release_year, status, present_streaming.
+ *       Le header de reponse NbFilms contient le nombre total avant pagination.
  *     tags: [Films]
  *     parameters:
  *       - in: query
  *         name: filmname
  *         schema:
  *           type: string
- *         description: Filter by film name
+ *         description: "Recherche unifiée avec préfixe optionnel : `titre:`, `acteur:`, `real:`, `id:`, `yyyymm:`, `ia:`, `ia2:`"
+ *         example: "acteur:Brad Pitt"
+ *       - in: query
+ *         name: title
+ *         schema:
+ *           type: string
+ *         description: "Filtre sur le titre français (regex, insensible à la casse). Ignoré si `filmname` est fourni."
+ *       - in: query
+ *         name: original_title
+ *         schema:
+ *           type: string
+ *         description: "Filtre sur le titre original. Ignoré si `filmname` est fourni."
+ *       - in: query
+ *         name: actor
+ *         schema:
+ *           type: string
+ *         description: "Filtre sur le nom d'acteur. Ignoré si `filmname` est fourni."
+ *       - in: query
+ *         name: director
+ *         schema:
+ *           type: string
+ *         description: "Filtre sur le réalisateur (job=Director). Ignoré si `filmname` est fourni."
+ *       - in: query
+ *         name: release_year
+ *         schema:
+ *           type: integer
+ *         description: "Filtre sur l'année de sortie (ex: 2023). Ignoré si `filmname` est fourni."
+ *         example: 2023
+ *       - in: query
+ *         name: status
+ *         schema:
+ *           type: string
+ *         description: "Filtre sur le statut du film (ex: Released). Ignoré si `filmname` est fourni."
+ *       - in: query
+ *         name: present_streaming
+ *         schema:
+ *           type: boolean
+ *         description: "Si `true`, retourne uniquement les films disponibles en streaming sur le serveur. Ignoré si `filmname` est fourni."
  *       - in: query
  *         name: skip
  *         schema:
  *           type: integer
- *         description: Number of records to skip
+ *           default: 0
+ *         description: Nombre d'enregistrements à ignorer (pagination)
  *       - in: query
  *         name: limit
  *         schema:
  *           type: integer
- *         description: Number of records to return
+ *           default: 20
+ *         description: Nombre maximum de résultats à retourner
  *       - in: query
  *         name: sort
  *         schema:
  *           type: string
- *         description: Sort field
+ *           default: original_title
+ *         description: "Champ de tri (ex: release_date, vote_average, UPDATE_DB_DATE)"
  *       - in: query
  *         name: sortsens
  *         schema:
  *           type: string
- *         description: Sort direction
+ *           enum: ["1", "-1"]
+ *           default: "1"
+ *         description: "Sens du tri : 1 ascendant, -1 descendant"
+ *       - in: query
+ *         name: usage
+ *         schema:
+ *           type: string
+ *           enum: [list]
+ *         description: "Si `list`, retourne une projection allégée (id, titres, poster, dates, statut, RICO_FICHIER, note) pour optimiser les performances"
+ *       - in: query
+ *         name: infocount
+ *         schema:
+ *           type: string
+ *         description: "Si présent, retourne uniquement le nombre de films correspondants"
  *     responses:
  *       200:
- *         description: List of films
+ *         description: "Liste de films (header NbFilms = nombre total avant pagination)"
+ *         headers:
+ *           NbFilms:
+ *             schema:
+ *               type: integer
+ *             description: Nombre total de films correspondant à la requête
  *         content:
  *           application/json:
  *             schema:
  *               type: array
  *               items:
  *                 type: object
+ *       500:
+ *         description: Erreur serveur ou MongoDB
  */
 router.get('/list', async function (req, res) {
 
@@ -434,7 +500,7 @@ router.get('/list', async function (req, res) {
     //2 - Gestion de la recherche detaillée
     console.log('2 / Filtre avec recherche filtre detaillée: ');
     console.dir(req.query, { depth: null, colors: true });
-    const { title, original_title, actor, director, release_year, status } = req.query;
+    const { title, original_title, actor, director, release_year, status, present_streaming } = req.query;
     var objrequete = {};
     console.log('1title=' + title);
     // Titre partiel
@@ -469,17 +535,22 @@ router.get('/list', async function (req, res) {
       };
     }
 
-    // Année
+    // Année (release_date est stocké comme string "YYYY-MM-DD" en base)
     if (release_year) {
       objrequete.release_date = {
-        $gte: new Date(`${release_year}-01-01`),
-        $lt: new Date(`${Number(release_year) + 1}-01-01`)
+        $gte: `${release_year}-01-01`,
+        $lt: `${Number(release_year) + 1}-01-01`
       };
     }
 
     // Statut
     if (status) {
       objrequete.status = status;
+    }
+
+    // Film présent en streaming (fichier sur le serveur davic.mkdh.fr)
+    if (present_streaming === 'true' || present_streaming === true) {
+      objrequete['RICO_FICHIER.serveur_name'] = 'davic.mkdh.fr';
     }
 
   }
