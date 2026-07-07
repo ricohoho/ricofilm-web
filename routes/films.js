@@ -3,7 +3,7 @@ const Sentry = require("@sentry/node");
 const axios = require('axios');
 var express = require('express');
 var router = express.Router();
-const { getSQLMongo } = require('../app/controllers/film.controller');
+//const { getSQLMongo } = require('../app/controllers/film.controller');
 const { callExternalServiceMistral } = require('../app/services/externalService');
 
 var RECHERCHE_ACTEUR = 'acteur:'
@@ -24,7 +24,7 @@ URL :
 */
 
 /* GET home page. */
-router.get('/', function (req, res, next) {
+router.get('/', function (req, res) {
   //RICO : index  est le nom du tempate .jade !
   res.header("Access-Control-Allow-Origin", "*");
   res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
@@ -60,7 +60,7 @@ router.get('/', function (req, res, next) {
 router.get('/listmenufilmimage', function (req, res) {
   var db = req.db;
   var collection = db.get('films');
-  var _filmname = req.query.filmname;
+  //var _filmname = req.query.filmname;
   var _skip = 0;
   var _limit = 10;
   var _sort = 'UPDATE_DB_DATE';
@@ -69,16 +69,16 @@ router.get('/listmenufilmimage', function (req, res) {
   var srequete = '{}';
   var objrequete = JSON.parse(srequete);
 
-  const projection = { original_title: 1 };
+  //const projection = { original_title: 1 };
 
-  optionBDString = '{' +
+  var optionBDString = '{' +
     '"projection":{ "id": 1, "original_title": 1, "title": 1, "UPDATE_DB_DATE": 1, "backdrop_path": 1, "credits": 1, "poster_path": 1, "overview": 1, "vote_average": 1, "release_date": 1, "genres": 1 },' +
     '"limit": ' + _limit + ',' +
     '"skip":' + _skip + ',' +
     '"sort":{"' + _sort + '":' + _sortsens + '}' +
     '}';
   console.log('optionBD:' + optionBDString);
-  optionBD = JSON.parse(optionBDString);
+  var optionBD = JSON.parse(optionBDString);
 
   collection.find(objrequete, optionBD, function (e, docs) {
     res.json(docs);
@@ -170,7 +170,7 @@ router.get('/listselect', [authJwt.verifyToken], function (req, res) {
   var _sort = 'original_title';
   var _sortsens = '1';
   //PAs de filtre
-  var srequete = '{}';
+  //var srequete = '{}';
 
   //2025/10/31 : Assouplissement de la requete : on cherche dans title et original_title
   //Attention on n'envoi plus de _filmname car on fait une recherche en local et totale depuis angular
@@ -185,16 +185,16 @@ router.get('/listselect', [authJwt.verifyToken], function (req, res) {
     };
   }
 
-  const projection = { original_title: 1 };
+ //const projection = { original_title: 1 };
 
-  optionBDString = '{' +
+  var optionBDString = '{' +
     '"projection":{ "id": 1,"original_title":1,"title":1},' +
     '"limit": ' + _limit + ',' +
     '"skip":' + _skip + ',' +
     '"sort":{"' + _sort + '":' + _sortsens + '}' +
     '}';
   console.log('optionBD:' + optionBDString);
-  optionBD = JSON.parse(optionBDString);
+  var optionBD = JSON.parse(optionBDString);
 
   collection.find(objrequete, optionBD, function (e, docs) {
     res.json(docs);
@@ -354,8 +354,8 @@ router.get('/list', async function (req, res) {
     _sortsens = '1';
   }
 
-  sortComplet = "['" + _sort + "','" + _sortsens + "']";
-  sortComplet = '{ "sort" : [{"' + _sort + '":' + _sortsens + '}]}';
+  //sortComplet = "['" + _sort + "','" + _sortsens + "']";
+  var sortComplet = '{ "sort" : [{"' + _sort + '":' + _sortsens + '}]}';
   console.log('skip/sortComplet=' + _skip + '/' + sortComplet);
 
 
@@ -374,29 +374,29 @@ router.get('/list', async function (req, res) {
     } else if (_filmname.indexOf(RECHERCHE_REAL) == 0) {
       _filmname = _filmname.substring(_filmname.indexOf(RECHERCHE_REAL) + RECHERCHE_REAL.length);
       console.log('requete [real]: ' + _filmname);
-      var objrequete = { "credits.crew.name": { '$regex': _filmname, '$options': 'i' } };
+      objrequete = { "credits.crew.name": { '$regex': _filmname, '$options': 'i' } };
     } else if (_filmname.indexOf(RECHERCHE_ID) == 0) {
       _filmname = _filmname.substring(_filmname.indexOf(RECHERCHE_ID) + RECHERCHE_ID.length);
       console.log('requete [id]: <' + _filmname + '>');
-      int_id = parseInt(_filmname, 10);;
-      var objrequete = { "id": int_id };
+      var int_id = parseInt(_filmname, 10);;
+      objrequete = { "id": int_id };
     } else if (_filmname.indexOf(RECHERCHE_YYYYMM) == 0) {
       _filmname = _filmname.substring(_filmname.indexOf(RECHERCHE_YYYYMM) + RECHERCHE_YYYYMM.length + 1);
       console.log('requete [yyyymm]: <' + _filmname + '>');
-      _yyyy = _filmname.substring(0, 4);
-      _mm = _filmname.substring(4, 6);
+      var _yyyy = _filmname.substring(0, 4);
+      var _mm = _filmname.substring(4, 6);
       console.log('requete [_yyyy]: <' + _yyyy + '>');
       console.log('requete [_mm]: <' + _mm + '>');
-      _DateMin = _yyyy + '-' + _mm + '-01';
-      _DateMax = _yyyy + '-' + _mm + '-30';
+      var _DateMin = _yyyy + '-' + _mm + '-01';
+      var _DateMax = _yyyy + '-' + _mm + '-30';
       //db.bios.find( { birth: { $gt: new Date('1940-01-01'), $lt: new Date('1960-01-01') } } )
-      var objrequete = {
+      objrequete = {
         UPDATE_DB_DATE: { $gt: new Date(_DateMin), $lt: new Date(_DateMax) }
       };
     } else if (_filmname.indexOf(RECHERCHE_TITRE) == 0) {
       _filmname = _filmname.substring(_filmname.indexOf(RECHERCHE_TITRE) + RECHERCHE_TITRE.length);
       console.log('requete [titre]: ' + _filmname);
-      var objrequete = {
+      objrequete = {
         $or: [
           { original_title: { '$regex': _filmname, '$options': 'i' } },
           { title: { '$regex': _filmname, '$options': 'i' } }
@@ -465,28 +465,28 @@ router.get('/list', async function (req, res) {
         // Vérifie si la réponse est déjà un objet JSON, en effet sur les requetes simple 
         // on a directment un json par exmple : { 'credits.cast.name': 'Aaron Taylor-Johnson' }
         if (srequete == null) {
-          var srequete = '{}';
-          var objrequete = JSON.parse(srequete);
+            srequete = '{}';
+           objrequete = JSON.parse(srequete);
         } else {
           if (typeof srequete === 'object') {
-            var objrequete = srequete;
+             objrequete = srequete;
           } else {
-            var objrequete = JSON.parse(srequete);
+             objrequete = JSON.parse(srequete);
           }
         }
 
       } catch (error) {
         console.error('Error calling external service IA:', error);
         Sentry.captureException(error);
-        var objrequete = { "id": "0" };
-        var objrequete = JSON.parse(srequete);
+        //objrequete = { "id": "0" };
+        objrequete = JSON.parse(srequete);
         //throw error;
       }
       console.log('requete IA: ' + objrequete);
     } else {
       //Recherche Centralisée : titre / acteur / realisateur
       console.log('requete [centralisée] sans indication de recherche: ' + _filmname)
-      var objrequete = {
+      objrequete = {
         $or: [
           { original_title: { '$regex': _filmname, '$options': 'i' } },
           { title: { '$regex': _filmname, '$options': 'i' } },
@@ -500,8 +500,8 @@ router.get('/list', async function (req, res) {
     //2 - Gestion de la recherche detaillée
     console.log('2 / Filtre avec recherche filtre detaillée: ');
     console.dir(req.query, { depth: null, colors: true });
-    const { title, original_title, actor, director, release_year, status, present_streaming } = req.query;
-    var objrequete = {};
+    const { title, original_title, actor, director, release_year, status, present_streaming,titles } = req.query;
+    objrequete = {};
     console.log('1title=' + title);
     // Titre partiel
     if (title) {
@@ -514,6 +514,15 @@ router.get('/list', async function (req, res) {
                         {title:{'$regex' : title, '$options' : 'i'}}
                      ]};
       */
+    }
+
+     // Reherche sur titre original ou titre français.
+    if (titles) {
+      console.log('titles=' + titles);
+      objrequete = { $or: [
+                        {original_title:{'$regex' : titles, '$options' : 'i'}},
+                        {title:{'$regex' : titles, '$options' : 'i'}}
+                     ]};
     }
 
     if (original_title) {
@@ -565,14 +574,14 @@ router.get('/list', async function (req, res) {
 
   console.log('sortComplet' + sortComplet);
 
-  optionBDString = '{' +
+  var optionBDString = '{' +
     '"limit": ' + _limit + ',' +
     '"skip":' + _skip + ',' +
     '"sort":{"' + _sort + '":' + _sortsens + '}' +
     projection +
     '}';
   console.log('optionBD:' + optionBDString);
-  optionBD = JSON.parse(optionBDString);
+  var optionBD = JSON.parse(optionBDString);
 
   console.log('info count=' + _infocount);
 
@@ -745,7 +754,7 @@ router.get('/list', async function (req, res) {
     var paramId = req.params.id;
     console.log('requete: film ' + paramId);
     
-    var query = {};
+    var query;
     // Si c'est un format de Mongo ObjectId (24 char hex)
     if (paramId.length === 24 && /^[0-9a-fA-F]{24}$/.test(paramId)) {
       query = { _id: paramId };
@@ -791,7 +800,7 @@ router.get('/list', async function (req, res) {
     console.log('addFilm: debut');
     var db = req.db;
     var collection = db.get('films');
-    collection.insert(req.body, function (err, result) {
+    collection.insert(req.body, function (err) {
       res.send(
         (err === null) ? { msg: '' } : { msg: err }
       );
@@ -802,6 +811,7 @@ router.get('/list', async function (req, res) {
 
 
 // Convertit un tableau d'objets { imdb_id, title } en requête MongoDB { imdb_id: { $in: [...] } }
+/*
 function convertToMongoInQueryImdb(array) {
   return {
     imdb_id: {
@@ -809,6 +819,7 @@ function convertToMongoInQueryImdb(array) {
     }
   };
 }
+*/
 
 // Convertit un tableau d'objets { imdb_id, title } en requête MongoDB { original_title: { $in: [...] } }
 function convertToMongoInQueryTitle(array) {
